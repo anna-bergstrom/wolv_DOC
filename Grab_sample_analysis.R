@@ -42,18 +42,33 @@ full_data <- full_data[temp,]
 
 #################### Subsetting data to only include core sites ####################
 core_sites <- full_data %>%
-  filter(Site == "forest" | Site == "nellie_juan_delta" | Site == "shrub_creek" | Site == "tundra_stream" |Site == "stream_gauge" | Site == "terminus" |Site == "glacier_hut")
+  filter(Site == "forest" | Site == "nellie_juan_delta" | Site == "shrub_creek" | Site == "tundra_stream" |Site == "stream_gauge" | Site == "terminus" |Site == "glacier_hut"|Site == "glacier_lake"|Site == "bench_outlet")
 
-ggplot(core_sites, aes(x=Site, y= DOC, color= Site)) +
+ggplot(core_sites, aes(x=Site, y= FDOM_lab, color= Site)) +
   scale_colour_brewer(palette = "Paired")+
   geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.2))+
-  ylab("DOC (ppm)")+
+  ylab("FDOM (lab)")+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -90, hjust = 0))+
   theme(legend.position = "none")  
 
 ##### Subsetting and plotting by site #######
+site_names <- c( "forest" , "nellie_juan_delta" , "shrub_creek" , "tundra_stream" , "stream_gauge" ,"terminus" , "glacier_hut", "glacier_lake", "bench_outlet")
+for (k in 1:length(site_names)) {
+  temp <- full_data %>%
+    filter(Site == site_names[k])
+  
+  print(ggplot(temp, aes(x=doy, y= DOC, group = yearS)) +
+    geom_point(aes(shape = as.factor(yearS)))+
+    ylab("DOC (ppm)")+
+    labs(title=site_names[k])+
+    theme_cust() +
+    scale_fill_discrete(name = "Year Collected")+
+    xlim(0,365)+
+    ylim(0,3.2))
+}
+
 forest <- full_data %>%
   filter(Site == "forest")  
 
@@ -98,7 +113,7 @@ ggplot(term, aes(x=doy, y= DOC, group = yearS)) +
 glac <- full_data %>%
   filter(Site == "bench_outlet"|Site == "glacier_hut"|Site == "glacier_lake")  
 
-ggplot(glac, aes(x=doy, y= DOC, group = yearS)) +
-  geom_point(aes(shape = as.factor(yearS)))+
+ggplot(glac, aes(x=HIX, y= DOC, group = Site)) +
+  geom_point(aes(color = Site))+
   ylab("DOC (ppm)")+
   theme_cust() 
