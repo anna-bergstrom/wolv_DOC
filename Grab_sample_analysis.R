@@ -23,7 +23,7 @@ theme_cust <- function(base_size = 11, base_family = "") {
 ########### Loading and organizing grab sample data #############
 
 #reading in 2016 & 2017 published data
-recent_samp <- read.csv('GrabSample_compiled_2019-2022DOC_analysis.csv') 
+recent_samp <- read.csv('GrabSample_compiled_2019-2022names.csv') 
 
 #reading in 2019 to present data
 early_samp <- read.csv('Hydrology_WolverineGlacier_GeochemSamples_Koch_2016_2017.csv') %>%
@@ -42,16 +42,18 @@ full_data <- full_data[temp,]
 
 #################### Subsetting data to only include core sites ####################
 core_sites <- full_data %>%
-  filter(Site == "forest" | Site == "nellie_juan_delta" | Site == "shrub_creek" | Site == "tundra_stream" |Site == "stream_gauge" | Site == "terminus" |Site == "glacier_hut"|Site == "glacier_lake"|Site == "bench_outlet")
+  filter(Site == "Forest" | Site == "Nellie_Juan" | Site == "Shrub" | Site == "Tundra" |Site == "stream_gauge" | Site == "Terminus" |Site == "Glacier"|Site == "glacier_lake"|Site == "bench_outlet")
 
-ggplot(core_sites, aes(x=Site, y= FDOM_lab, color= Site)) +
+ggplot(core_sites, aes(x=Site, y= DOC, color= Site)) +
   scale_colour_brewer(palette = "Paired")+
   geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.2))+
-  ylab("FDOM (lab)")+
+  ylab("FI")+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -90, hjust = 0))+
   theme(legend.position = "none")  
+
+ggsave(file ="FI_boxplot.pdf",width=6, height=5, units = "in" )
 
 ##### Subsetting and plotting by site #######
 site_names <- c( "forest" , "nellie_juan_delta" , "shrub_creek" , "tundra_stream" , "stream_gauge" ,"terminus" , "glacier_hut", "glacier_lake", "bench_outlet")
@@ -59,9 +61,9 @@ for (k in 1:length(site_names)) {
   temp <- full_data %>%
     filter(Site == site_names[k])
   
-  print(ggplot(temp, aes(x=doy, y= DOC, group = yearS)) +
+  print(ggplot(temp, aes(x=doy, y= FI, group = yearS)) +
     geom_point(aes(shape = as.factor(yearS)))+
-    ylab("DOC (ppm)")+
+    ylab("FI")+
     labs(title=site_names[k])+
     theme_cust() +
     scale_fill_discrete(name = "Year Collected")+
@@ -78,38 +80,6 @@ ggplot(forest, aes(x=doy, y= DOC, group = yearS)) +
   theme_cust() 
 
 
-NJ <- full_data %>%
-  filter(Site == "nellie_juan_delta")  
-
-ggplot(NJ, aes(x=doy, y= DOC, group = yearS)) +
-  geom_point(aes(shape = as.factor(yearS)))+
-  ylab("DOC (ppm)")+
-  theme_cust() 
-
-Wolv <- full_data %>%
-  filter(Site == "stream_gauge")  
-
-ggplot(Wolv, aes(x=doy, y= DOC, group = yearS)) +
-  geom_point(aes(shape = as.factor(yearS)))+
-  ylab("DOC (ppm)")+
-  theme_cust() 
-
-shrub <- full_data %>%
-  filter(Site == "shrub_creek")  
-
-ggplot(shrub, aes(x=doy, y= DOC, group = yearS)) +
-  geom_point(aes(shape = as.factor(yearS)))+
-  ylab("DOC (ppm)")+
-  theme_cust() 
-
-term <- full_data %>%
-  filter(Site == "terminus")  
-
-ggplot(term, aes(x=doy, y= DOC, group = yearS)) +
-  geom_point(aes(shape = as.factor(yearS)))+
-  ylab("DOC (ppm)")+
-  theme_cust() 
-
 glac <- full_data %>%
   filter(Site == "bench_outlet"|Site == "glacier_hut"|Site == "glacier_lake")  
 
@@ -117,3 +87,92 @@ ggplot(glac, aes(x=HIX, y= DOC, group = Site)) +
   geom_point(aes(color = Site))+
   ylab("DOC (ppm)")+
   theme_cust() 
+
+###### Comparing DOC Metrics to other variables #########
+
+ggplot(core_sites, aes(x=d2H, y= DOC, color = Site)) +
+  scale_colour_brewer(palette = "Paired")+
+  geom_point(aes(shape = as.factor(yearS)))+
+  ylab("DOC (ppm)")+
+  theme_cust() 
+
+
+###### Importing Incubation Data ##########
+
+#reading in 2022 Incubation results
+incub22 <- read.csv('incubation_results22.csv') 
+NOSAMS <- read.csv('NOSAMS_results.csv') 
+
+incub_names <- unique(incub22$Site)
+
+    incub_summary <- incub22 %>%
+      group_by(Site,Time.Point) %>%
+      summarise(meanconc = mean(DOC_mgL),stdconc = sd(DOC_mgL)) 
+    
+    ##### Want to pull mean grab sample C-quality metrics (FI, HIX) for each site but this requires standardization of site names across grab sample data sets
+    grab_summary <- full_data %>%
+      filter(Site == incub_names[1]|Site == incub_names[2]|Site == incub_names[3]|Site == incub_names[4]|Site == incub_names[5]|Site == incub_names[6])%>%
+      group_by(Site) %>%
+      summarise(meanFI = mean(FI, na.rm = TRUE),meanHIX = mean(HIX, na.rm = TRUE)) 
+    
+    
+     incub_summary <-incub_summary %>%
+      group_by(Site) %>% 
+      mutate(roll_pct_change = ((meanconc[1]-meanconc)/meanconc[1]) * 100)
+    
+    ggplot(incub_summary, aes(x=Time.Point, y = meanconc, group= Site, color =Site))+
+    geom_line()+
+    geom_point()+
+    geom_errorbar(aes(ymin=meanconc-stdconc, ymax=meanconc+stdconc ), width=.6,position=position_dodge(0.05))+
+    theme_cust()+
+    xlim(0,15)+
+    ylab("DOC (ppm)")+
+    xlab("Days since incubation start") 
+    
+    ggplot(incub_summary, aes(x=Time.Point, y = roll_pct_change, group= Site, color =Site))+
+      geom_line()+
+      geom_point()+
+      theme_cust()+
+      geom_hline(yintercept = 0)+
+      xlim(0,15)+
+      ylab("DOC percent lost")+
+      xlab("Days since incubation start") 
+  
+
+  DOC_lost <- rep(NA,length(incub_names))
+  
+  for (k in 1:length(incub_names)) {
+    temp <- incub_summary %>%
+    filter(Site == incub_names[k] & (Time.Point == 0 |Time.Point == 14)) 
+    
+    DOC_lost[k] <- ((temp$meanconc[1] - temp$meanconc[2])/temp$meanconc[1])*100  
+  }
+  
+  DOC_lost <- data.frame(DOC_lost,incub_names) %>%
+    rename(Site = incub_names)
+  
+  DOC_full <- merge(DOC_lost, NOSAMS, by="Site")
+  DOC_full <- merge(DOC_full, grab_summary, by="Site")
+  
+  ggplot(DOC_full, aes(x=Age, y = DOC_lost, color =Site))+
+    geom_line()+
+    geom_point()+
+    theme_cust()+
+    ylab("DOC percent lost")+
+    xlab("Apparent Age (years)") 
+  
+  ggplot(DOC_full, aes(x=meanHIX, y = DOC_lost, color =Site))+
+    geom_line()+
+    geom_point()+
+    theme_cust()+
+    ylab("DOC percent lost")+
+    xlab("mean HIX") 
+  
+  ggplot(DOC_full, aes(x=Age, y = meanHIX, color =Site))+
+    geom_line()+
+    geom_point()+
+    theme_cust()+
+    ylab("mean HIX")+
+    xlab("Apparent Age (years)")  
+  
+  
