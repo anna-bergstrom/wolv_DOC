@@ -109,7 +109,6 @@ incub_names <- unique(incub22$Site)
       group_by(Site,Time.Point) %>%
       summarise(meanconc = mean(DOC_mgL),stdconc = sd(DOC_mgL)) 
     
-    ##### Want to pull mean grab sample C-quality metrics (FI, HIX) for each site but this requires standardization of site names across grab sample data sets
     grab_summary <- full_data %>%
       filter(Site == incub_names[1]|Site == incub_names[2]|Site == incub_names[3]|Site == incub_names[4]|Site == incub_names[5]|Site == incub_names[6])%>%
       group_by(Site) %>%
@@ -128,6 +127,7 @@ incub_names <- unique(incub22$Site)
     xlim(0,15)+
     ylab("DOC (ppm)")+
     xlab("Days since incubation start") 
+    ggsave(file ="Incub_TS_conc.pdf",width=6, height=5, units = "in" )
     
     ggplot(incub_summary, aes(x=Time.Point, y = roll_pct_change, group= Site, color =Site))+
       geom_line()+
@@ -137,6 +137,7 @@ incub_names <- unique(incub22$Site)
       xlim(0,15)+
       ylab("DOC percent lost")+
       xlab("Days since incubation start") 
+    ggsave(file ="Incub_TS_percentlost.pdf",width=6, height=5, units = "in" )
   
 
   DOC_lost <- rep(NA,length(incub_names))
@@ -160,6 +161,7 @@ incub_names <- unique(incub22$Site)
     theme_cust()+
     ylab("DOC percent lost")+
     xlab("Apparent Age (years)") 
+  ggsave(file ="Incub_percent_age.pdf",width=6, height=5, units = "in" )
   
   ggplot(DOC_full, aes(x=meanHIX, y = DOC_lost, color =Site))+
     geom_line()+
@@ -167,6 +169,7 @@ incub_names <- unique(incub22$Site)
     theme_cust()+
     ylab("DOC percent lost")+
     xlab("mean HIX") 
+  ggsave(file ="Incub_percent_HIX.pdf",width=6, height=5, units = "in" )
   
   ggplot(DOC_full, aes(x=Age, y = meanHIX, color =Site))+
     geom_line()+
@@ -174,5 +177,5 @@ incub_names <- unique(incub22$Site)
     theme_cust()+
     ylab("mean HIX")+
     xlab("Apparent Age (years)")  
-  
+  ggsave(file ="Incub_HIX_age.pdf",width=6, height=5, units = "in" )
   
