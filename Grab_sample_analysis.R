@@ -42,26 +42,26 @@ full_data <- full_data[temp,]
 
 #################### Subsetting data to only include core sites ####################
 core_sites <- full_data %>%
-  filter(Site == "Forest" | Site == "Nellie_Juan" | Site == "Shrub" | Site == "Tundra" |Site == "stream_gauge" | Site == "Terminus" |Site == "Glacier"|Site == "glacier_lake"|Site == "bench_outlet")
+  filter(Site == "Forest" | Site == "Nellie_Juan" | Site == "Shrub" | Site == "Tundra" |Site == "stream_gauge" | Site == "Terminus" |Site == "Glacier"|Site == "glacier_lake")
 
-ggplot(core_sites, aes(x=Site, y= DOC, color= Site)) +
+ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= HIX, color= Site)) +
   scale_colour_brewer(palette = "Paired")+
   geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.2))+
-  ylab("FI")+
+  ylab("DOC")+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -90, hjust = 0))+
   theme(legend.position = "none")  
 
-ggsave(file ="FI_boxplot.pdf",width=6, height=5, units = "in" )
+#ggsave(file ="FI_boxplot.pdf",width=6, height=5, units = "in" )
 
 ##### Subsetting and plotting by site #######
-site_names <- c( "forest" , "nellie_juan_delta" , "shrub_creek" , "tundra_stream" , "stream_gauge" ,"terminus" , "glacier_hut", "glacier_lake", "bench_outlet")
+site_names <- c( "forest" , "nellie_juan_delta" , "shrub_creek" , "tundra_stream" , "stream_gauge" ,"terminus" , "glacier_hut", "glacier_lake")
 for (k in 1:length(site_names)) {
   temp <- full_data %>%
     filter(Site == site_names[k])
   
-  print(ggplot(temp, aes(x=doy, y= FI, group = yearS)) +
+  print(ggplot(temp, aes(x=doy, y= DOC, group = yearS)) +
     geom_point(aes(shape = as.factor(yearS)))+
     ylab("FI")+
     labs(title=site_names[k])+
@@ -124,7 +124,7 @@ incub_names <- unique(incub22$Site)
     geom_point()+
     geom_errorbar(aes(ymin=meanconc-stdconc, ymax=meanconc+stdconc ), width=.6,position=position_dodge(0.05))+
     theme_cust()+
-    xlim(0,15)+
+    xlim(0,30)+
     ylab("DOC (ppm)")+
     xlab("Days since incubation start") 
     ggsave(file ="Incub_TS_conc.pdf",width=6, height=5, units = "in" )
@@ -134,7 +134,7 @@ incub_names <- unique(incub22$Site)
       geom_point()+
       theme_cust()+
       geom_hline(yintercept = 0)+
-      xlim(0,15)+
+      xlim(0,30)+
       ylab("DOC percent lost")+
       xlab("Days since incubation start") 
     ggsave(file ="Incub_TS_percentlost.pdf",width=6, height=5, units = "in" )
@@ -144,7 +144,7 @@ incub_names <- unique(incub22$Site)
   
   for (k in 1:length(incub_names)) {
     temp <- incub_summary %>%
-    filter(Site == incub_names[k] & (Time.Point == 0 |Time.Point == 14)) 
+    filter(Site == incub_names[k] & (Time.Point == 0 |Time.Point == 28)) 
     
     DOC_lost[k] <- ((temp$meanconc[1] - temp$meanconc[2])/temp$meanconc[1])*100  
   }
