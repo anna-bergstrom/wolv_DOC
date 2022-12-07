@@ -20,6 +20,9 @@ theme_cust <- function(base_size = 11, base_family = "") {
     )
 }
 
+
+
+
 ########### Loading and organizing grab sample data #############
 
 #reading in 2016 & 2017 published data
@@ -42,57 +45,76 @@ full_data <- full_data[temp,]
 
 #################### Subsetting data to only include core sites ####################
 core_sites <- full_data %>%
-  filter(Site == "Forest" | Site == "Nellie_Juan" | Site == "shrub_creek" | Site == "Tundra" |Site == "stream_gauge" | Site == "Terminus" |Site == "glacier_hut"|Site == "glacier_lake")
+  filter(Site == "Forest" | Site == "Nellie_Juan" | Site == "shrub_creek" | Site == "Tundra" |Site == "stream_gauge" | Site == "Terminus" |Site == "glacier_hut")
 
-ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= DOC, color= Site)) +
-  scale_colour_brewer(palette = "Paired")+
+site_names <- c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "glacier_lake")
+
+
+ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= DOC, color= as.factor(Site))) +
+  scale_color_manual( values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8" ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut"))+
   geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.2))+
-  ylab("DOC")+
+  ylab(bquote('DOC' (mgl^-1)))+
+  xlab("")+
+  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier"))+
   theme_cust() +
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+
+  theme(axis.text.x=element_text(angle = -45, hjust = 0))+
   theme(legend.position = "none")  
 
-ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= FDOM_lab, color= Site)) +
-  scale_colour_brewer(palette = "Paired")+
+
+ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= FDOM_lab, color= as.factor(Site))) +
+  scale_color_manual( values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8" ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut"))+
   geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.2))+
   ylab("FDOM")+
+  xlab("")+
+  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier"))+
   theme_cust() +
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+
+  theme(axis.text.x=element_text(angle = -45, hjust = 0))+
   theme(legend.position = "none")  
 
-ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= FI, color= Site)) +
-  scale_colour_brewer(palette = "Paired")+
+ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= FI, color= as.factor(Site))) +
+  scale_color_manual( values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8" ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut"))+
   geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.2))+
   geom_hline(yintercept=1.9, linetype="dashed", color = "#1A237E", size=1)+
   geom_hline(yintercept=1.4, linetype="dashed", color = "#43A047", size=1)+
   ylab("FI")+
+  xlab("")+
+  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier"))+
   theme_cust() +
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+
+  theme(axis.text.x=element_text(angle = -45, hjust = 0))+
   theme(legend.position = "none")  
 
-ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= HIX, color= Site)) +
-  scale_colour_brewer(palette = "Paired")+
+ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= HIX, color= as.factor(Site))) +
+  scale_color_manual( values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8"), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut"))+
   geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.2))+
   ylab("HIX")+
+  xlab("")+
+  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier"))+
   theme_cust() +
-  theme(axis.text.x=element_text(angle = -90, hjust = 0))+
+  theme(axis.text.x=element_text(angle = -45, hjust = 0))+
   theme(legend.position = "none")  
 
-ggplot(core_sites, aes(x=FDOM_lab, y = FI, color =Site))+
-  geom_point()+
+ggplot(core_sites, aes(x=FDOM_lab, y = FI, color =as.factor(Site)))+
+  scale_color_manual(values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8" ),breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut"),labels = c("Forest", "Nellie Juan" , "Shrub" , "Tundra" , "Gage" , "Terminus", "Glacier"))+
+  geom_point(size = 4, alpha = 0.7)+
+  geom_hline(yintercept=1.9, linetype="dashed", color = "#1A237E", size=1)+
+  geom_hline(yintercept=1.4, linetype="dashed", color = "#43A047", size=1)+
   theme_cust()+
+  theme(legend.position = c(0.78,0.7)) +
+  ylim(1,2.7)+
+  labs(color = "Site")+
   ylab("FI")+
-  xlab("DOC")  
-ggsave(file ="Incub_HIX_age.pdf",width=6, height=5, units = "in" )
+  xlab(bquote('DOC' (mgl^-1)))  
+
+#ggsave(file ="Incub_HIX_age.pdf",width=6, height=5, units = "in" )
 
 #ggsave(file ="FI_boxplot.pdf",width=6, height=5, units = "in" )
 
 ##### Subsetting and plotting by site #######
-site_names <- c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "glacier_lake")
+
 for (k in 1:length(site_names)) {
   temp <- full_data %>%
     filter(Site == site_names[k])
@@ -247,4 +269,57 @@ incub_names <- unique(incub22$Site)
   ggsave(file ="Incub_HIX_age.pdf",width=6, height=5, units = "in" )
   
   
+  ################## Loading in FDOM timeseries data ######################
+  
+ FDOM21 <- read.csv('2021.combined.corrected.fDOM.csv')
+ FDOM21$Forest.datetime <- mdy_hm(FDOM21$Forest.datetime, tz='America/Anchorage')
+ FDOM21$Tundra.datetime <- mdy_hm(FDOM21$Tundra.datetime, tz='America/Anchorage')
+ FDOM21$Shrub.datetime <- mdy_hm(FDOM21$Shrub.datetime, tz='America/Anchorage')
+ FDOM21$Nellie.datetime <- mdy_hm(FDOM21$Nellie.datetime, tz='America/Anchorage')
+  
+ FDOM22 <- read.csv('2022.combined.corrected.fDOM.csv')
+ FDOM22$Forest.datetime <- mdy_hm(FDOM22$Forest.datetime, tz='America/Anchorage')
+ FDOM22$Tundra.datetime <- mdy_hm(FDOM22$Tundra.datetime, tz='America/Anchorage')
+ FDOM22$Shrub.datetime <- mdy_hm(FDOM22$Shrub.datetime, tz='America/Anchorage')
+ FDOM22$Nellie.datetime <- mdy_hm(FDOM22$Nellie.datetime, tz='America/Anchorage')
+ 
+ bounds <- as.POSIXct(c('01/01/2021 00:00:00','10/01/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+ gauge_data <- readNWISdata(sites = '15236900', service = 'iv', parameterCd = '00060', 
+                              startDate = as.Date(bounds[1]), endDate = as.Date(bounds[2])) %>%
+   select(datetime = dateTime, Q = X_00060_00000) %>%
+   mutate(datetime = with_tz(datetime, tz = 'America/Anchorage'),Q_m3s = Q*0.028316847)
+ 
+  ggplot()+
+    geom_point(data = FDOM21, aes(x=Forest.datetime, y= Forest), color = "#E2725B", size = 0.2)+
+    geom_point(data = FDOM21, aes(x=Tundra.datetime, y= Tundra), color = "#A80084", size = 0.2 )+
+    geom_point(data = FDOM21, aes(x=Shrub.datetime, y= shrub_creek), color = "#FFAA00", size = 0.2)+
+    geom_point(data = FDOM21, aes(x=Nellie.datetime, y= Nellie_Juan), color = "#EA9DFF", size = 0.2)+
+    
+    geom_point(data = FDOM22, aes(x=Forest.datetime, y= Forest), color = "#E2725B", size = 0.2)+
+    geom_point(data = FDOM22, aes(x=Tundra.datetime, y= Tundra), color = "#A80084", size = 0.2 )+
+    geom_point(data = FDOM22, aes(x=Shrub.datetime, y= shrub_creek), color = "#FFAA00", size = 0.2)+
+    geom_point(data = FDOM22, aes(x=Nellie.datetime, y= Nellie_Juan), color = "#EA9DFF", size = 0.2)+
+    ylab("fDOM (QSU)")+
+    xlab('')+
+    theme_cust() 
+  
+  ggplot()+
+    geom_point(data = gauge_data, aes(x=datetime, y= Q), color = 'black', size = 0.2)+
+    xlim(bounds)+
+    ylab(expression(paste("Discharge (m"^"3","s"^"-1", ")")))+
+    xlab('')+
+    theme_cust()
+  
+  bounds <- as.POSIXct(c('09/08/2021 00:00:00','09/15/2021 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+  
+  ggplot()+
+    geom_point(data = FDOM21, aes(x=Forest.datetime, y= Forest), color = "#E2725B", size = 0.2)+
+    geom_point(data = FDOM21, aes(x=Tundra.datetime, y= Tundra), color = "#A80084", size = 0.2 )+
+    geom_point(data = FDOM21, aes(x=Shrub.datetime, y= shrub_creek), color = "#FFAA00", size = 0.2)+
+    geom_point(data = FDOM21, aes(x=Nellie.datetime, y= Nellie_Juan), color = "#EA9DFF", size = 0.2)+
+    geom_line(data = gauge_data, aes(x=datetime, y= Q/10), color = 'black', size = 0.2)+
+    xlim(bounds)+
+    ylab("fDOM (QSU)")+
+    xlab('')+
+    theme_cust() 
   
