@@ -104,14 +104,14 @@ ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= HIX, color= as.facto
   theme(axis.text.x=element_text(angle = -45, hjust = 0))+
   theme(legend.position = "none")  
 
-ggplot(core_sites, aes(x=DOC, y = FI, color =as.factor(Site)))+
+ggplot(core_sites, aes(x=DOC, y = FDOM_lab, color =as.factor(Site)))+
   scale_color_manual(values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8" ),breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut"),labels = c("Forest", "Nellie Juan" , "Shrub" , "Tundra" , "Gage" , "Terminus", "Glacier"))+
   geom_point(size = 4, alpha = 0.7)+
-  geom_hline(yintercept=1.9, linetype="dashed", color = "#1A237E", size=1)+
-  geom_hline(yintercept=1.4, linetype="dashed", color = "#43A047", size=1)+
+  #geom_hline(yintercept=1.9, linetype="dashed", color = "#1A237E", size=1)+
+ #geom_hline(yintercept=1.4, linetype="dashed", color = "#43A047", size=1)+
   theme_cust()+
   theme(legend.position = c(0.87,0.78)) +
-  ylim(1,2.7)+
+  #ylim(1,2.7)+
   labs(color = "Site")+
   ylab("Fluorescence Index")+
   xlab(bquote('DOC' (mgl^-1)))+  
@@ -203,8 +203,10 @@ incub_names <- unique(incub22$Site)
       xlab("Days since incubation start") 
     ggsave(file ="Incub_TS_percentlost.pdf",width=6, height=5, units = "in" )
   
+   
 
   DOC_lost <- rep(NA,length(incub_names))
+  DOC_init <- rep(NA,length(incub_names))
 
   DOC_Fparams<- incub_summary %>%
     filter(Time.Point == 0) %>%
@@ -212,17 +214,44 @@ incub_names <- unique(incub22$Site)
   
   for (k in 1:length(incub_names)) {
     temp <- incub_summary %>%
-    filter(Site == incub_names[k] & (Time.Point == 0 |Time.Point == 2)) 
+    filter(Site == incub_names[k] & (Time.Point == 0 |Time.Point == 6)) 
     
-    DOC_lost[k] <- ((temp$meanconc[1] - temp$meanconc[2])/temp$meanconc[1])*100  
+    DOC_lost[k] <- ((temp$meanconc[1] - temp$meanconc[2])/temp$meanconc[1])*100 
+    DOC_init[k]<- temp$meanconc[1]
   }
   
-  DOC_lost <- data.frame(DOC_lost,incub_names) %>%
+  DOC_lost <- data.frame(DOC_lost,incub_names,DOC_init) %>%
     rename(Site = incub_names)
   
   DOC_full <- merge(DOC_lost, NOSAMS, by="Site")
   DOC_full <- merge(DOC_full, DOC_Fparams, by="Site")
+  DOC_full$DOC_lost[DOC_full$Site == "Nellie_Juan"] = 0
   
+  ggplot(DOC_full, aes(fill=Site, y= DOC_lost, x= reorder(Site,DOC_init)))+
+    geom_bar(stat="identity", color = "black")+
+  scale_fill_manual(values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8" ),breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "Glacier"),labels = c("Forest", "Nellie Juan" , "Shrub" , "Tundra" , "Gage" , "Terminus", "Glacier"))+
+  theme_cust()+
+  ylab("% BDOC (6 day incubation) ")+
+  xlab("")+
+    scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "Glacier" = "Glacier"))+
+  theme(axis.text.x=element_text(angle = -45, hjust = 0))+
+  theme(legend.position = "none")+ 
+  theme(axis.text = element_text(size = 16))+
+  theme(axis.title = element_text(size = 16))
+  
+  ggplot(DOC_full, aes(fill=Site, y= DOC_init, x= reorder(Site,DOC_init)))+
+    geom_bar(stat="identity", color = "black")+
+    scale_fill_manual(values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8" ),breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "Glacier"),labels = c("Forest", "Nellie Juan" , "Shrub" , "Tundra" , "Gage" , "Terminus", "Glacier"))+
+    theme_cust()+
+    ylab("Initial average DOC (ppm) ")+
+    xlab("")+
+    scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "Glacier" = "Glacier"))+
+    theme(axis.text.x=element_text(angle = -45, hjust = 0))+
+    theme(legend.position = "none")+ 
+    theme(axis.text = element_text(size = 16))+
+    theme(axis.title = element_text(size = 16))
+  
+    
   ggplot(DOC_full, aes(x=Age, y = DOC_lost, color =Site))+
     geom_line()+
     geom_point()+
@@ -248,12 +277,18 @@ incub_names <- unique(incub22$Site)
   ggsave(file ="Incub_HIX_age.pdf",width=6, height=5, units = "in" )
   
   ggplot(DOC_full, aes(x=mean_FI, y = DOC_lost, color =Site))+
-    geom_line()+
-    geom_point()+
+    geom_point(size=5)+
+    scale_color_manual(values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8" ),breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "Glacier"),labels = c("Forest", "Nellie Juan" , "Shrub" , "Tundra" , "Gage" , "Terminus", "Glacier"))+
     theme_cust()+
-    ylab("DOC percent lost")+
-    xlab("mean FI") 
-  ggsave(file ="Incub_percent_HIX.pdf",width=6, height=5, units = "in" )
+    ylab("% BDOC (6 day incubation) ")+
+    xlab("mean FI")+
+    #theme(axis.text.x=element_text(angle = -45, hjust = 0))+
+    theme(legend.position = "none")+ 
+    theme(axis.text = element_text(size = 16))+
+    theme(axis.title = element_text(size = 16))
+  
+    
+
   
   ggplot(DOC_full, aes(x=Age, y = mean_FI, color =Site))+
     geom_line()+
@@ -468,4 +503,53 @@ Sum$precip2[Sum$precip2 == 0 ] = NA
     theme(axis.text = element_text(size = 16))+
     theme(axis.title = element_text(size = 16))    
 
+  
+  ################ Calculating API for time period surrounding example fall rain events ##############
+ 
+  # Defining the get API function 
+  getApi <- function(x,k=0.9,n=5,finite=TRUE) {
+    l <- length(x)
+    y <- rep(NA,times=l)
+    if(finite) {
+      if(length(k)==1) {
+        kn <- rep(NA,times=n)
+        for(i in 1:n) kn[i] <- k^(n-i)
+      } else {
+        n <- length(k)
+        kn <- sort(k)
+      }
+      for(i in (n+1):l) {
+        y[i] <- t(kn)%*%x[(i-n):(i-1)]
+      }
+    } else {
+      k <- max(k)
+      y[2] <- x[1]
+      for(i in 3:l) {y[i] <- k*y[i-1]+x[i-1]}
+    }
+    return(y)
+  }
+  
+  # manipulating the met TS data to feed it into the API function
+  #calculating daily precip totals
+  day_sum <- aggregate(precip2["precip2"], list(hour=cut(as.POSIXct(precip2$datetime), "day")),sum, na.rm = TRUE) %>%
+    mutate(datetime = with_tz(hour, tz = 'America/Anchorage'))
+  
+  API_990 <- getApi(day_sum$precip2, k = 0.9, n= 7) 
+  day_sum <- data.frame(day_sum,API_990) 
+  
+  bounds_sub<- as.POSIXct(c('08/16/2022 00:00:00','08/22/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+  bounds_sub2<- as.POSIXct(c('09/09/2021 00:00:00','09/15/2021 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+  
+  ggplot()+
+    geom_line(data = day_sum, aes(x=datetime, y= API_990), color = 'black', size = 0.5)+
+    #scale_y_continuous('fDOM (QSU)', sec.axis = sec_axis(~.*10, name = expression(paste("Discharge (ft"^"3","s"^"-1", ")")))) +
+    ylim(0,70)+
+    xlim(bounds_sub)+
+    #ylab("fDOM (QSU)")+
+    xlab('')+
+    theme_cust()+
+    theme(axis.text = element_text(size = 16))+
+    theme(axis.title = element_text(size = 16)) 
+  
+  ans <-day_sum$API_990[day_sum$datetime == bounds_sub[1]]
   
