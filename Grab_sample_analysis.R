@@ -110,10 +110,10 @@ ggplot(core_sites, aes(x=DOC, y = FDOM_lab, color =as.factor(Site)))+
   #geom_hline(yintercept=1.9, linetype="dashed", color = "#1A237E", size=1)+
  #geom_hline(yintercept=1.4, linetype="dashed", color = "#43A047", size=1)+
   theme_cust()+
-  theme(legend.position = c(0.87,0.78)) +
+  theme(legend.position = c(0.2,0.75)) +
   #ylim(1,2.7)+
   labs(color = "Site")+
-  ylab("Fluorescence Index")+
+  ylab("Lab fDOM")+
   xlab(bquote('DOC' (mgl^-1)))+  
   theme(axis.text = element_text(size = 16))+
   theme(axis.title = element_text(size = 16))+
@@ -322,6 +322,34 @@ incub_names <- unique(incub22$Site)
  FDOM21$Tundra.datetime <- mdy_hm(FDOM21$Tundra.datetime, tz='America/Anchorage')
  FDOM21$Shrub.datetime <- mdy_hm(FDOM21$Shrub.datetime, tz='America/Anchorage')
  FDOM21$Nellie.datetime <- mdy_hm(FDOM21$Nellie.datetime, tz='America/Anchorage')
+ 
+ WlFDOM21 <- read.csv('wolv.2021.WT.cor.fDOM.csv')
+ WlFDOM21$datetime <- mdy_hm(WlFDOM21$datetime, tz='America/Anchorage')
+ 
+ 
+ GlFDOM21 <- read.csv('glacier.2021.wt.cor.fdom.csv')
+ GlFDOM21$datetime <- mdy_hm(GlFDOM21$datetime, tz='America/Anchorage')
+ glacier <- data.frame((GlFDOM21[,3:4]))
+ 
+shrub = data.frame((FDOM21[,1:2]))
+forest = data.frame((FDOM21[,3:4]))
+tundra = data.frame((FDOM21[,5:6]))
+nellie = data.frame((FDOM21[,7:8]))
+
+start <- FDOM21$Shrub.datetime[1]
+datetime_target <- data.frame(seq(start, start + days(365), by = "15 min"))
+colnames(datetime_target)<- ('datetime')
+colnames(shrub)<- c('datetime','shrub')
+colnames(forest)<- c('datetime','forest')
+colnames(tundra)<- c('datetime','tundra')
+colnames(nellie)<- c('datetime','nellie')
+
+FDOM21TS <- merge(datetime_target,shrub, by = 'datetime',all.x = TRUE)
+FDOM21TS <- merge(FDOM21TS,forest, by = 'datetime',all.x = TRUE)
+FDOM21TS <- merge(FDOM21TS,tundra, by = 'datetime',all.x = TRUE)
+FDOM21TS <- merge(FDOM21TS,nellie, by = 'datetime',all.x = TRUE)
+FDOM21TS <- merge(FDOM21TS,glacier, by = 'datetime',all.x = TRUE)
+FDOM21TS <- merge(FDOM21TS,WlFDOM21, by = 'datetime',all.x = TRUE)
   
  FDOM22 <- read.csv('2022.combined.corrected.fDOM.csv')
  FDOM22$Forest.datetime <- mdy_hm(FDOM22$Forest.datetime, tz='America/Anchorage')
@@ -329,14 +357,27 @@ incub_names <- unique(incub22$Site)
  FDOM22$Shrub.datetime <- mdy_hm(FDOM22$Shrub.datetime, tz='America/Anchorage')
  FDOM22$Nellie.datetime <- mdy_hm(FDOM22$Nellie.datetime, tz='America/Anchorage')
  
- WlFDOM21 <- read.csv('wolv.2021.WT.cor.fDOM.csv')
- WlFDOM21$datetime <- mdy_hm(WlFDOM21$datetime, tz='America/Anchorage')
- 
  WlFDOM22 <- read.csv('wolv.2022.WT.cor.fDOM.csv')
  WlFDOM22$datetime <- mdy_hm(WlFDOM22$datetime, tz='America/Anchorage')
  
- GlFDOM21 <- read.csv('glacier.2021.wt.cor.fdom.csv')
- GlFDOM21$datetime <- mdy_hm(GlFDOM21$datetime, tz='America/Anchorage')
+ forest = data.frame((FDOM22[,1:2]))
+ tundra= data.frame((FDOM22[,3:4]))
+ shrub = data.frame((FDOM22[,5:6]))
+ nellie = data.frame((FDOM22[,7:8]))
+ 
+ start <- FDOM22$Forest.datetime[1]
+ datetime_target <- data.frame(seq(start, start + days(365), by = "15 min"))
+ colnames(datetime_target)<- ('datetime')
+ colnames(shrub)<- c('datetime','shrub')
+ colnames(forest)<- c('datetime','forest')
+ colnames(tundra)<- c('datetime','tundra')
+ colnames(nellie)<- c('datetime','nellie')
+ 
+ FDOM22TS <- merge(datetime_target,shrub, by = 'datetime',all.x = TRUE)
+ FDOM22TS <- merge(FDOM22TS,forest, by = 'datetime',all.x = TRUE)
+ FDOM22TS <- merge(FDOM22TS,tundra, by = 'datetime',all.x = TRUE)
+ FDOM22TS <- merge(FDOM22TS,nellie, by = 'datetime',all.x = TRUE)
+ FDOM22TS <- merge(FDOM22TS,WlFDOM22, by = 'datetime',all.x = TRUE)
  
  bounds <- as.POSIXct(c('01/01/2021 00:00:00','10/01/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
  
@@ -356,9 +397,9 @@ colnames(precip2)[1] ="datetime"
 precip2$precip2[precip2$precip2 > 300 |precip2$precip2 < 0 ] = NA
 
   
-Sum <- aggregate(precip2["precip2"], list(hour=cut(as.POSIXct(precip2$datetime), "hour")),sum) %>%
-  mutate(datetime = with_tz(hour, tz = 'America/Anchorage'))
+Sum <- aggregate(precip2["precip2"], list(hour=cut(as.POSIXct(precip2$datetime), "hour")),sum)
 Sum$precip2[Sum$precip2 == 0 ] = NA 
+colnames(Sum)[1] ="datetime" 
 
 
   ts1<- ggplot()+
@@ -392,10 +433,19 @@ Sum$precip2[Sum$precip2 == 0 ] = NA
  
  bothTS <- plot_grid(ts2, ts1, ncol=1, align = "v")
  bothTS
+ 
  ########## Rain Sep 2021 ##########
-  bounds_sub<- as.POSIXct(c('09/09/2021 00:00:00','09/15/2021 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+  bounds_Rsep21<- as.POSIXct(c('09/09/2021 00:00:00','09/15/2021 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+
+  Rsep21 <- Sum %>%
+   filter(as.POSIXct(datetime) >= bounds_Rsep21[1], as.POSIXct(datetime) <= bounds_Rsep21[2]) 
+  
+    Rsep21FDOM <- FDOM21 %>%
+      filter(as.POSIXct(datetime) >= bounds_Rsep21[1], as.POSIXct(datetime) <= bounds_Rsep21[2]) 
+    
   
    p1 <- ggplot()+
+     geom_hline(yintercept=5, linetype="dashed", color = "#1A237E", size=1)+
     geom_point(data = FDOM21, aes(x=Forest.datetime, y= Forest), color = "#E2725B", size = 0.2)+
     geom_point(data = FDOM21, aes(x=Tundra.datetime, y= Tundra), color = "#A80084", size = 0.2 )+
     geom_point(data = FDOM21, aes(x=Shrub.datetime, y= shrub_creek), color = "#FFAA00", size = 0.2)+
@@ -429,6 +479,7 @@ Sum$precip2[Sum$precip2 == 0 ] = NA
   bounds_sub<- as.POSIXct(c('08/16/2022 00:00:00','08/22/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
   
   p1 <- ggplot()+
+    geom_hline(yintercept=5, linetype="dashed", color = "#1A237E", size=1)+
     geom_point(data = FDOM22, aes(x=Forest.datetime, y= Forest), color = "#E2725B", size = 0.2)+
     geom_point(data = FDOM22, aes(x=Tundra.datetime, y= Tundra), color = "#A80084", size = 0.2 )+
     geom_point(data = FDOM22, aes(x=Shrub.datetime, y= shrub_creek), color = "#FFAA00", size = 0.2)+
@@ -459,6 +510,9 @@ Sum$precip2[Sum$precip2 == 0 ] = NA
   
   ########## Snow melt 2022 ##########
   bounds_sub<- as.POSIXct(c('05/23/2022 00:00:00','05/29/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+  precip_sub <- day_sum %>%
+    dplyr::filter(hour >= bounds_sub[1],
+                  hour <= bounds_sub[2])
   
   p1 <- ggplot()+
     geom_point(data = FDOM22, aes(x=Forest.datetime, y= Forest), color = "#E2725B", size = 0.2)+
@@ -470,6 +524,16 @@ Sum$precip2[Sum$precip2 == 0 ] = NA
     scale_y_continuous('fDOM (QSU)', sec.axis = sec_axis(~.*10, name = expression(paste("Discharge (ft"^"3","s"^"-1", ")")))) +
     xlim(bounds_sub)+
     #ylab("fDOM (QSU)")+
+    xlab('')+
+    theme_cust()+
+    theme(axis.text = element_text(size = 16))+
+    theme(axis.title = element_text(size = 16)) 
+  
+  p2<- barplot(height = Sum$precip2, names.arg = Sum$datetime)+
+    xlim(bounds_sub)+
+    scale_y_reverse()+
+    ylim(7.5,0)+
+    ylab(expression(paste("Precipitation (mm ","hr"^"-1", ")")))+
     xlab('')+
     theme_cust()+
     theme(axis.text = element_text(size = 16))+
