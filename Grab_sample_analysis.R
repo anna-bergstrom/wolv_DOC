@@ -414,10 +414,11 @@ colnames(precip2)[1] ="datetime"  #changing the column header
 precip2$precip2[precip2$precip2 > 300 |precip2$precip2 < 0 ] = NA #when the gage was drained there are artificially high values, this turns those and any negative values into no data
 
 ########################## this is where the issue is ########################
-precip_hourly <- aggregate(precip2["precip2"], list(hour=cut(as.POSIXct(precip2$datetime), "hour")),sum) # summing 15 min data to hourly precip totals
+precip_hourly <- aggregate(precip2["precip2"], list(hour=cut(as.POSIXct(precip2$datetime), "hour")),sum) 
+# summing 15 min data to hourly precip totals
 precip_hourly$precip2[precip_hourly$precip2 == 0 ] = NA  # turning any hour that has no precip to an NA so it doesn't display as a 0 in plots. 
 colnames(precip_hourly)<- c('datetime','precip_mm')
-precip_hourly$datetime <- mdy_hms(precip_hourly$datetime, tz='America/Anchorage')
+precip_hourly$datetime <- as.POSIXct(precip_hourly$datetime, tz='America/Anchorage')
 
 #merging to one data frame
 start <- precip_hourly$datetime[1] #finding the first time step with data (i.e. Jan 1 00:00)
@@ -427,6 +428,7 @@ colnames(datetime_target)<- ('datetime')
 
 Precip_q_ts <- merge(datetime_target,gauge_data, by = 'datetime',all.x = TRUE)
 Precip_q_ts <- merge(Precip_q_ts,precip_hourly, by = 'datetime',all.x = TRUE)
+Precip_q_ts <- merge(Precip_q_ts,precip2, by = 'datetime',all.x = TRUE)
 
 # Creating a multi-panel plot of the full two years of data 
 
@@ -451,19 +453,19 @@ Precip_q_ts <- merge(Precip_q_ts,precip_hourly, by = 'datetime',all.x = TRUE)
     theme(axis.title = element_text(size = 16)) 
   
   # Calculate the range needed to avoid having your hyetograph and hydrograph overlap 
-  maxRange <- 30 # set how wide of the first axis (streamflow)
-  coeff <- 0.1 # set the shrink coeffcient of Precipitation
+  maxRange <- 1000 # set how wide of the first axis (streamflow)
+  coeff <- .05 # set the shrink coeffcient of Precipitation
   # Use geom_tile to create the inverted hyetograph
   # y = the center point of each bar
   # maxRange - Precipitation/coeff/2
-   ggplot()+
-  #geom_tile(data=precip_hourly, aes(x= datetime, y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff, fill = 'PColor'))+
+   ggplot(data= Precip_q_ts, aes(x= datetime))+
+    geom_tile( aes( y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'blue', fill = 'blue')+
     # Plot your discharge data
-    geom_line(data = gauge_data, aes(x= datetime, y = Q_m3s), alpha = 0.8, size = 0.7) +
+    geom_line(aes( y = Q), alpha = 0.8, size = 0.7) +
     # Create a second axis with sec_axis() and format the labels to display the original precipitation units.
-    scale_y_continuous(name = "Streamflow ()",limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
-    scale_fill_manual(values = c('PColor' = "#386cb0"),labels = c('PColor' = 'Precipitation'),name = NULL)+
-    #scale_color_manual(values = c('black', '#e41a1c'), name = NULL)+
+    scale_y_continuous(name = "Streamflow (cfs)",limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
+    scale_fill_manual(values = c('PColor' = "#386cb0"),labels = c('Pcolor' = 'Precipitation'),name = NULL)+
+    #scale_color_manual(values = c('black'), name = NULL)+
     theme_cust()
   
     #Precip and Q data   
