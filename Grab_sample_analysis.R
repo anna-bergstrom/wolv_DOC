@@ -413,7 +413,6 @@ precip2 <- data.frame(met_data$datetime[2:length(met_data$datetime)],precip2) #p
 colnames(precip2)[1] ="datetime"  #changing the column header
 precip2$precip2[precip2$precip2 > 300 |precip2$precip2 < 0 ] = NA #when the gage was drained there are artificially high values, this turns those and any negative values into no data
 
-########################## this is where the issue is ########################
 precip_hourly <- aggregate(precip2["precip2"], list(hour=cut(as.POSIXct(precip2$datetime), "hour")),sum) 
 # summing 15 min data to hourly precip totals
 precip_hourly$precip2[precip_hourly$precip2 == 0 ] = NA  # turning any hour that has no precip to an NA so it doesn't display as a 0 in plots. 
@@ -448,157 +447,121 @@ Precip_q_ts <- merge(Precip_q_ts,precip2, by = 'datetime',all.x = TRUE)
     geom_point(data = FDOM22TS, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
     ylab("fDOM (QSU)")+
     xlab('')+
-    theme_cust()+
-    theme(axis.text = element_text(size = 16))+
-    theme(axis.title = element_text(size = 16)) 
-  
+    theme_cust()
+    
+    #theme(axis.text = element_text(size = 16))+
+    #theme(axis.title = element_text(size = 16)) 
+    
+    
+  #Precip and Q data  
   # Calculate the range needed to avoid having your hyetograph and hydrograph overlap 
   maxRange <- 1000 # set how wide of the first axis (streamflow)
   coeff <- .05 # set the shrink coeffcient of Precipitation
   # Use geom_tile to create the inverted hyetograph
   # y = the center point of each bar
   # maxRange - Precipitation/coeff/2
-   ggplot(data= Precip_q_ts, aes(x= datetime))+
-    geom_tile( aes( y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'blue', fill = 'blue')+
+  ts2<- ggplot(data= Precip_q_ts, aes(x= datetime))+
+    geom_tile( aes( y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'darkslateblue', fill = 'darkslateblue')+
     # Plot your discharge data
     geom_line(aes( y = Q), alpha = 0.8, size = 0.7) +
     # Create a second axis with sec_axis() and format the labels to display the original precipitation units.
     scale_y_continuous(name = "Streamflow (cfs)",limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
-    scale_fill_manual(values = c('PColor' = "#386cb0"),labels = c('Pcolor' = 'Precipitation'),name = NULL)+
-    #scale_color_manual(values = c('black'), name = NULL)+
+    xlab('')+
     theme_cust()
   
-    #Precip and Q data   
- ts2<- ggplot()+
-    geom_point(data = gauge_data, aes(x=datetime, y= Q_m3s), color = 'black', size = 0.2)+
-    xlim(bounds)+
-    ylab(expression(paste("Discharge (m"^"3","s"^"-1", ")")))+
-    xlab('')+
-    theme_cust()+
-   theme(axis.text = element_text(size = 16))+
-   theme(axis.title = element_text(size = 16))
- 
  bothTS <- plot_grid(ts2, ts1, ncol=1, align = "v")
  bothTS
  
  ########## Rain Sep 2021 ##########
   bounds_Rsep21<- as.POSIXct(c('09/09/2021 00:00:00','09/15/2021 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
 
-  Rsep21 <- Sum %>%
+  Rsep21 <- Precip_q_ts %>%
    filter(as.POSIXct(datetime) >= bounds_Rsep21[1], as.POSIXct(datetime) <= bounds_Rsep21[2]) 
   
-    Rsep21FDOM <- FDOM21 %>%
+    Rsep21FDOM <- FDOM21TS %>%
       filter(as.POSIXct(datetime) >= bounds_Rsep21[1], as.POSIXct(datetime) <= bounds_Rsep21[2]) 
     
+    maxRange <- 100 # set how wide of the first axis (streamflow)
+    coeff <- .1 # set the shrink coeffcient of Precipitation
   
-   p1 <- ggplot()+
-     geom_hline(yintercept=5, linetype="dashed", color = "#1A237E", size=1)+
-    geom_point(data = FDOM21, aes(x=Forest.datetime, y= Forest), color = "#E2725B", size = 0.2)+
-    geom_point(data = FDOM21, aes(x=Tundra.datetime, y= Tundra), color = "#A80084", size = 0.2 )+
-    geom_point(data = FDOM21, aes(x=Shrub.datetime, y= shrub_creek), color = "#FFAA00", size = 0.2)+
-    geom_point(data = FDOM21, aes(x=Nellie.datetime, y= Nellie_Juan), color = "#EA9DFF", size = 0.2)+
-    geom_point(data = WlFDOM21, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
-     geom_point(data = GlFDOM21, aes(x=datetime, y= glacier), color = "#0084A8", size = 0.2)+
-    geom_line(data = gauge_data, aes(x=datetime, y= Q/10), color = 'black', size = 0.5)+
-    scale_y_continuous('fDOM (QSU)', sec.axis = sec_axis(~.*10, name = expression(paste("Discharge (ft"^"3","s"^"-1", ")")))) +
-    xlim(bounds_sub)+
-    #ylab("fDOM (QSU)")+
+     ggplot()+
+    geom_point(data = Rsep21FDOM, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
+    geom_point(data = Rsep21FDOM, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
+    geom_point(data = Rsep21FDOM, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
+    geom_point(data = Rsep21FDOM, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
+    geom_point(data = Rsep21FDOM, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
+    geom_point(data = Rsep21FDOM, aes(x=datetime, y= glacier), color = "#0084A8", size = 0.2)+
+   
+    geom_line(data = Rsep21, aes(x=datetime, y= Q/10), color = 'black', size = 0.5)+
+    geom_tile(data = Rsep21, aes(x=datetime, y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'darkslateblue', fill = 'darkslateblue')+ 
+    scale_y_continuous(name = 'fDOM (QSU)',limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
+    xlim(bounds_Rsep21)+
+
     xlab('')+
     theme_cust()+
     theme(axis.text = element_text(size = 16))+
     theme(axis.title = element_text(size = 16))
   
-  p2<- ggplot()+
-    geom_point(data = Sum, aes(x=datetime, y= (precip2)), color = 'darkslateblue')+
-    xlim(bounds_sub)+
-    scale_y_reverse()+
-    ylim(7.5,0)+
-    ylab(expression(paste("Precipitation (mm ","hr"^"-1", ")")))+
-    xlab('')+
-    theme_cust()+
-    theme(axis.text = element_text(size = 16))+
-    theme(axis.title = element_text(size = 16)) 
-  
-  both <- plot_grid(p2, p1, ncol=1, align = "v")
-  both
-  
   ########## Rain July 2022 ##########
-  bounds_sub<- as.POSIXct(c('08/16/2022 00:00:00','08/22/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+  bounds_Rjul22<- as.POSIXct(c('08/16/2022 00:00:00','08/22/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
   
-  p1 <- ggplot()+
-    geom_hline(yintercept=5, linetype="dashed", color = "#1A237E", size=1)+
-    geom_point(data = FDOM22, aes(x=Forest.datetime, y= Forest), color = "#E2725B", size = 0.2)+
-    geom_point(data = FDOM22, aes(x=Tundra.datetime, y= Tundra), color = "#A80084", size = 0.2 )+
-    geom_point(data = FDOM22, aes(x=Shrub.datetime, y= shrub_creek), color = "#FFAA00", size = 0.2)+
-    geom_point(data = FDOM22, aes(x=Nellie.datetime, y= Nellie_Juan), color = "#EA9DFF", size = 0.2)+
-    geom_point(data = WlFDOM22, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
-    geom_line(data = gauge_data, aes(x=datetime, y= Q/10), color = 'black', size = 0.5)+
-    scale_y_continuous('fDOM (QSU)', sec.axis = sec_axis(~.*10, name = expression(paste("Discharge (ft"^"3","s"^"-1", ")")))) +
-    xlim(bounds_sub)+
-    #ylab("fDOM (QSU)")+
-    xlab('')+
-    theme_cust()+
-    theme(axis.text = element_text(size = 16))+
-    theme(axis.title = element_text(size = 16)) 
-  
-  p2<- ggplot()+
-    geom_point(data = Sum, aes(x=datetime, y= (precip2)), color = 'darkslateblue')+
-    xlim(bounds_sub)+
-    scale_y_reverse()+
-    ylim(7.5,0)+
-    ylab(expression(paste("Precipitation (mm ","hr"^"-1", ")")))+
-    xlab('')+
-    theme_cust()+
-    theme(axis.text = element_text(size = 16))+
-    theme(axis.title = element_text(size = 16)) 
-  
-  both <- plot_grid(p2, p1, ncol=1, align = "v")
-  both
-  
+     
+     Rjul22 <- Precip_q_ts %>%
+       filter(as.POSIXct(datetime) >= bounds_Rjul22[1], as.POSIXct(datetime) <= bounds_Rjul22[2]) 
+     
+     Rjul22FDOM <- FDOM22TS %>%
+       filter(as.POSIXct(datetime) >= bounds_Rjul22[1], as.POSIXct(datetime) <= bounds_Rjul22[2]) 
+     
+     maxRange <- 100 # set how wide of the first axis (streamflow)
+     coeff <- .1 # set the shrink coeffcient of Precipitation
+     
+     ggplot()+
+       geom_point(data = Rjul22FDOM, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
+       geom_point(data = Rjul22FDOM, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
+       geom_point(data = Rjul22FDOM, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
+       geom_point(data = Rjul22FDOM, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
+       geom_point(data = Rjul22FDOM, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
+       
+       geom_line(data = Rjul22, aes(x=datetime, y= Q/10), color = 'black', size = 0.5)+
+       geom_tile(data = Rjul22, aes(x=datetime, y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'darkslateblue', fill = 'darkslateblue')+ 
+       scale_y_continuous(name = 'fDOM (QSU)',limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
+       xlim(bounds_Rjul22)+
+       
+       xlab('')+
+       theme_cust()+
+       theme(axis.text = element_text(size = 16))+
+       theme(axis.title = element_text(size = 16))
+     
+     
   ########## Snow melt 2022 ##########
-  bounds_sub<- as.POSIXct(c('05/23/2022 00:00:00','05/29/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
-  precip_sub <- day_sum %>%
-    dplyr::filter(hour >= bounds_sub[1],
-                  hour <= bounds_sub[2])
-  
-  p1 <- ggplot()+
-    geom_point(data = FDOM22, aes(x=Forest.datetime, y= Forest), color = "#E2725B", size = 0.2)+
-    geom_point(data = FDOM22, aes(x=Tundra.datetime, y= Tundra), color = "#A80084", size = 0.2 )+
-    geom_point(data = FDOM22, aes(x=Shrub.datetime, y= shrub_creek), color = "#FFAA00", size = 0.2)+
-    geom_point(data = FDOM22, aes(x=Nellie.datetime, y= Nellie_Juan), color = "#EA9DFF", size = 0.2)+
-    geom_point(data = WlFDOM22, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
-    geom_line(data = gauge_data, aes(x=datetime, y= Q/10), color = 'black', size = 0.5)+
-    scale_y_continuous('fDOM (QSU)', sec.axis = sec_axis(~.*10, name = expression(paste("Discharge (ft"^"3","s"^"-1", ")")))) +
-    xlim(bounds_sub)+
-    #ylab("fDOM (QSU)")+
-    xlab('')+
-    theme_cust()+
-    theme(axis.text = element_text(size = 16))+
-    theme(axis.title = element_text(size = 16)) 
-  
-  p2<- barplot(height = Sum$precip2, names.arg = Sum$datetime)+
-    xlim(bounds_sub)+
-    scale_y_reverse()+
-    ylim(7.5,0)+
-    ylab(expression(paste("Precipitation (mm ","hr"^"-1", ")")))+
-    xlab('')+
-    theme_cust()+
-    theme(axis.text = element_text(size = 16))+
-    theme(axis.title = element_text(size = 16)) 
-  
-  p2<- ggplot()+
-    geom_point(data = Sum, aes(x=datetime, y= (precip2)), color = 'darkslateblue')+
-    xlim(bounds_sub)+
-    scale_y_reverse()+
-    ylim(7.5,0)+
-    ylab(expression(paste("Precipitation (mm ","hr"^"-1", ")")))+
-    xlab('')+
-    theme_cust()+
-    theme(axis.text = element_text(size = 16))+
-    theme(axis.title = element_text(size = 16)) 
-  
-  both <- plot_grid(p2, p1, ncol=1, align = "v")
-  both
+  bounds_Mmay22<- as.POSIXct(c('05/16/2022 00:00:00','05/29/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+
+     Mmay22 <- Precip_q_ts %>%
+       filter(as.POSIXct(datetime) >= bounds_Mmay22[1], as.POSIXct(datetime) <= bounds_Mmay22[2]) 
+     
+     Mmay22FDOM <- FDOM22TS %>%
+       filter(as.POSIXct(datetime) >= bounds_Mmay22[1], as.POSIXct(datetime) <= bounds_Mmay22[2]) 
+     
+     maxRange <- 25 # set how wide of the first axis (streamflow)
+     coeff <- .1 # set the shrink coeffcient of Precipitation
+     
+     ggplot()+
+       geom_point(data = Mmay22FDOM, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
+       geom_point(data = Mmay22FDOM, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
+       geom_point(data = Mmay22FDOM, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
+       geom_point(data = Mmay22FDOM, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
+       geom_point(data = Mmay22FDOM, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
+       
+       geom_line(data = Mmay22, aes(x=datetime, y= Q/10), color = 'black', size = 0.5)+
+       geom_tile(data = Mmay22, aes(x=datetime, y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'darkslateblue', fill = 'darkslateblue')+ 
+       scale_y_continuous(name = 'fDOM (QSU)',limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
+       xlim(bounds_Mmay22)+
+       
+       xlab('')+
+       theme_cust()+
+       theme(axis.text = element_text(size = 16))+
+       theme(axis.title = element_text(size = 16))
+     
   
   ############# Making stacked bar of land cover #####################
   
