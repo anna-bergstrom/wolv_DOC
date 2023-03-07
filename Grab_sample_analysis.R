@@ -34,6 +34,7 @@ early_samp <- read.csv('Hydrology_WolverineGlacier_GeochemSamples_Koch_2016_2017
 #combining datasets
 full_data <- bind_rows(recent_samp,early_samp) %>%
   mutate(Datetime = as.POSIXct(Datetime, format = "%m/%d/%Y %H:%M", tz = 'America/Anchorage')) %>%
+  mutate(Datetime = Datetime+years(2000)) %>%
   mutate(.before = "Temperature" , doy = yday(Datetime)) %>%
   mutate(.before = "Temperature" , yearS = year(Datetime))
 
@@ -96,6 +97,18 @@ ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= HIX, color= as.facto
   geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.2))+
   ylab("HIX")+
+  xlab("")+
+  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier"))+
+  theme_cust() +
+  theme(axis.text.x=element_text(angle = -45, hjust = 0))+
+  theme(legend.position = "none")  
+
+
+ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= Mg, color= as.factor(Site))) +
+  scale_color_manual( values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8"), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut"))+
+  geom_boxplot(outlier.shape =  NA) +
+  geom_jitter(shape=16, position=position_jitter(0.2))+
+  ylab("Mg")+
   xlab("")+
   scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier"))+
   theme_cust() +
