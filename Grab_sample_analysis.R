@@ -4,6 +4,7 @@ library(lubridate)
 library(zoo)
 library(imputeTS)
 library(ggpubr)
+library(stringr)
 library(xts)
 library(dygraphs)
 library(factoextra)
@@ -442,7 +443,16 @@ Precip_q_ts <- merge(datetime_target,gauge_data, by = 'datetime',all.x = TRUE)
 Precip_q_ts <- merge(Precip_q_ts,precip_hourly, by = 'datetime',all.x = TRUE)
 Precip_q_ts <- merge(Precip_q_ts,precip2, by = 'datetime',all.x = TRUE)
 
-# Creating a multi-panel plot of the full two years of data 
+########### Comparing sonde FDOM to sample DOC ##############
+rep_str = c('stream_gauge' = 'gage','Forest'= 'forest', 'shrub_creek' = 'shrub', 'Tundra' = 'tundra', 'Nellie_Juan' = 'nellie', 'glacier_hut' = 'glacier')
+core_sites$Site <- str_replace_all(core_sites$Site, rep_str)
+core_lab22 <- core_sites[core_sites$yearS == 2022,] %>%
+  filter()
+core_lab21 <- core_sites[core_sites$yearS == 2021,]
+
+samp_sond22<- merge(core_lab22, FDOM22TS, by.x = 'Datetime', by.y = 'datetime', all.x = TRUE)
+
+########## Creating a multi-panel plot of the full two years of data ######################
 
 #FDOM data 
   ts1<- ggplot()+
