@@ -105,11 +105,11 @@ ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= HIX, color= as.facto
   theme(legend.position = "none")  
 
 
-ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= Mg, color= as.factor(Site))) +
+ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= TN, color= as.factor(Site))) +
   scale_color_manual( values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8"), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut"))+
   geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.2))+
-  ylab("Mg")+
+  ylab("Phosphate (ppm)")+
   xlab("")+
   scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier"))+
   theme_cust() +
@@ -152,12 +152,12 @@ for (k in 1:length(site_names)) {
     ylim(0,3.2))
 }
 
-forest <- full_data %>%
-  filter(Site == "forest")  
+stream_gage <- full_data %>%
+  filter(Site == "stream_gauge")  
 
-ggplot(forest, aes(x=doy, y= DOC, group = yearS)) +
+ggplot(stream_gage, aes(x=doy, y= Fe, group = yearS)) +
   geom_point(aes(shape = as.factor(yearS)))+
-  ylab("DOC (ppm)")+
+  ylab("Fe (ppm)")+
   theme_cust() 
 
 
@@ -446,12 +446,65 @@ Precip_q_ts <- merge(Precip_q_ts,precip2, by = 'datetime',all.x = TRUE)
 ########### Comparing sonde FDOM to sample DOC ##############
 rep_str = c('stream_gauge' = 'gage','Forest'= 'forest', 'shrub_creek' = 'shrub', 'Tundra' = 'tundra', 'Nellie_Juan' = 'nellie', 'glacier_hut' = 'glacier')
 core_sites$Site <- str_replace_all(core_sites$Site, rep_str)
-core_lab22 <- core_sites[core_sites$yearS == 2022,] %>%
-  filter()
+core_sites$Datetime <- round_date(core_sites$Datetime, "15 minutes")
+
+core_lab22 <- core_sites[core_sites$yearS == 2022,] 
 core_lab21 <- core_sites[core_sites$yearS == 2021,]
 
-samp_sond22<- merge(core_lab22, FDOM22TS, by.x = 'Datetime', by.y = 'datetime', all.x = TRUE)
+rownames(core_lab22)<- seq(1,nrow(core_lab22),1)
+rownames(core_lab21)<- seq(1,nrow(core_lab21),1)
+core_lab22$'Sonde' <- rep(NA, nrow(core_lab22))
+core_lab21$'Sonde' <- rep(NA, nrow(core_lab21))
 
+#####----- INPUT VALUES BY LOOPING THROUGH EACH VARIABLE NAME -----#####
+i <- 2
+k<- 4
+for (i in 2:6){
+  inds <- which(core_lab22$'Site' == colnames(FDOM22TS)[i])
+  times <- core_lab22$Datetime[inds]
+  for (k in 1:length(times)){
+  time_inds <- which(FDOM22TS$'datetime' == times[k])
+  temp <- FDOM22TS[(time_inds-8):(time_inds+8),i]
+  if (all(is.na(temp))){
+    core_lab22$'Sonde'[inds[k]] <-NA}
+  else{
+    core_lab22$'Sonde'[inds[k]] <- mean(na_remove(temp))}
+  }
+} 
+
+for (i in 2:6){
+  inds <- which(core_lab21$'Site' == colnames(FDOM21TS)[i])
+  times <- core_lab21$Datetime[inds]
+  for (k in 1:length(times)){
+    time_inds <- which(FDOM21TS$'datetime' == times[k])
+    temp <- FDOM21TS[(time_inds-8):(time_inds+8),i]
+    if (all(is.na(temp))){
+      core_lab21$'Sonde'[inds[k]] <-NA}
+    else{
+      core_lab21$'Sonde'[inds[k]] <- mean(na_remove(temp))}
+  }
+} 
+
+core_site20s <- rbind(core_lab21, core_lab22)
+
+ggplot(core_site20s, aes(x=DOC, y = Sonde, color =as.factor(Site)))+
+  scale_color_manual(values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF",  "#0084A8", "#059E41" ),breaks = c( "forest" , "nellie" , "shrub" , "tundra" , "gage" , "glacier"),labels = c("Forest", "Nellie Juan" , "Shrub" , "Tundra" , "Gage" ,  "Glacier"))+
+  geom_point(size = 4, alpha = 0.7)+
+  #geom_hline(yintercept=1.9, linetype="dashed", color = "#1A237E", size=1)+
+  #geom_hline(yintercept=1.4, linetype="dashed", color = "#43A047", size=1)+
+  theme_cust()+
+  theme(legend.position = c(0.2,0.75)) +
+  #ylim(1,2.7)+
+  labs(color = "Site")+
+  ylab("Sonde fDOM")+
+  xlab(bquote('DOC' (mgl^-1)))+  
+  theme(axis.text = element_text(size = 16))+
+  theme(axis.title = element_text(size = 16))+
+  theme(legend.text = element_text(size = 12))+
+  theme(legend.title = element_text(size = 16))
+
+
+#write.csv(core_site20s, "Site_FDOMdata.csv")
 ########## Creating a multi-panel plot of the full two years of data ######################
 
 #FDOM data 
