@@ -52,14 +52,13 @@ core_sites <- full_data %>%
 
 site_names <- c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet")
 
-
 ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= DOC, color= as.factor(Site))) +
   scale_color_manual( values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8", "#6600CC" ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
   geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.2))+
   ylab(bquote('DOC' (mgl^-1)))+
   xlab("")+
-  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Lake Inlet"))+
+  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Upper Tundra"))+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -45, hjust = 0))+
   theme(legend.position = "none")+ 
@@ -75,7 +74,7 @@ ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= FI, color= as.factor
   geom_hline(yintercept=1.4, linetype="dashed", color = "#43A047", size=1)+
   ylab("Fluorescence Index")+
   xlab("")+
-  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Lake Inlet"))+
+  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Upper Tundra"))+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -45, hjust = 0))+
   theme(legend.position = "none")+ 
@@ -90,7 +89,7 @@ ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= Nitrate, color= as.f
   geom_jitter(shape=16, position=position_jitter(0.2))+
   ylab(bquote('Nitrate' (mgl^-1)))+
   xlab("")+
-  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Lake Inlet"))+
+  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Upper Tundra"))+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -45, hjust = 0))+
   theme(legend.position = "none")+ 
@@ -105,7 +104,7 @@ ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= Phosphate_P, color= 
   ylab(bquote('Phosphate' (mgl^-1)))+
   xlab("")+
   ylim(0,0.1)+
-  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Lake Inlet"))+
+  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Upper Tundra"))+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -45, hjust = 0))+
   theme(legend.position = "none")+
@@ -113,17 +112,21 @@ ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= Phosphate_P, color= 
   theme(axis.text = element_text(size = 16))+
   theme(axis.title = element_text(size = 16))
 
-ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= Ca, color= as.factor(Site))) +
+ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= DOC/(TN-(Ammonium_N+Nitrate_plus_Nitrite_N)), color= as.factor(Site))) +
   scale_color_manual( values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8", "#6600CC" ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
   geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.2))+
-  ylab(bquote('Phosphate' (mgl^-1)))+
+  ylab(bquote(C:N))+
   xlab("")+
   #ylim(0,1)+
-  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Lake Inlet"))+
+  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Upper Tundra"))+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -45, hjust = 0))+
-  theme(legend.position = "none")  
+  theme(legend.position = "none")+  
+  theme(aspect.ratio = 1/1)+
+  theme(axis.text = element_text(size = 16))+
+  theme(axis.title = element_text(size = 16))
+
 
 ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= HIX, color= as.factor(Site))) +
   scale_color_manual( values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8", "#6600CC"), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
@@ -131,9 +134,12 @@ ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= HIX, color= as.facto
   geom_jitter(shape=16, position=position_jitter(0.2))+
   ylab("HIX")+
   xlab("")+
-  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Lake Inlet"))+
+  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Upper Tundra"))+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -45, hjust = 0))+
+  theme(aspect.ratio = 1/1)+
+  theme(axis.text = element_text(size = 16))+
+  theme(axis.title = element_text(size = 16))+
   theme(legend.position = "none")  
 
 ########## Not being used in MS ###############
@@ -143,7 +149,7 @@ ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= FDOM_lab, color= as.
   geom_jitter(shape=16, position=position_jitter(0.2))+
   ylab("Lab fDOM")+
   xlab("")+
-  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Lake Inlet"))+
+  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Upper Tundra"))+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -45, hjust = 0))+
   theme(legend.position = "none")+ 
@@ -521,20 +527,26 @@ for (i in 2:6){
 
 core_site20s <- rbind(core_lab21, core_lab22)
 
-ggplot(core_site20s, aes(x=DOC, y = Sonde, color =as.factor(Site)))+
+#plot with just sonde FDOM v.s. DOC 
+ggplot(core_site20s, aes(x=Sonde, y = DOC, color =as.factor(Site), group = 1))+
   scale_color_manual(values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF",  "#0084A8", "#059E41" , "#6600CC"),breaks = c( "forest" , "nellie" , "shrub" , "tundra" , "gage" , "glacier"),labels = c("Forest", "Nellie Juan" , "Shrub" , "Tundra" , "Gage" ,  "Glacier"))+
   geom_point(size = 3, alpha = 0.7)+
+  geom_smooth(method = "lm",formula = y~x, color = 'black')+
   theme_cust()+
   theme(legend.position = c(0.2,0.75)) +
   labs(color = "Site")+
-  ylab("Sonde fDOM")+
-  xlab(bquote('DOC' (mgl^-1)))+  
+  xlab("Sonde fDOM (qsu)")+
+  ylab(bquote('DOC' (mgl^-1)))+  
   theme(aspect.ratio = 1/1)+
   theme(axis.text = element_text(size = 16))+
   theme(axis.title = element_text(size = 16))+
   theme(legend.text = element_text(size = 12))+
   theme(legend.title = element_text(size = 16))
 
+ DOC_lm <- lm( formula= DOC ~ Sonde, data = core_site20s)
+ summary(DOC_lm)
+
+#Plot with sonde FDOM and Lab FDOM v.s. DOC data 
 ggplot()+
   geom_point(size = 3, alpha = 0.7,data = core_site20s,aes(y=Sonde, x=DOC, color =as.factor(Site)))+
   geom_point(size = 3, alpha = 0.7,shape = 15, data = core_site20s, aes(y=FDOM_lab, x=DOC,color =as.factor(Site)))+
