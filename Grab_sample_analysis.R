@@ -112,11 +112,13 @@ ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= Phosphate_P, color= 
   theme(axis.text = element_text(size = 16))+
   theme(axis.title = element_text(size = 16))
 
-ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= DOC/(TN-(Ammonium_N+Nitrate_plus_Nitrite_N)), color= as.factor(Site))) +
+#TN-(Ammonium_N+Nitrate_plus_Nitrite_N)
+
+ggplot(core_site20s, aes(x=reorder(Site,DOC,na.rm = TRUE), y= ((Nitrate)), color= as.factor(Site))) +
   scale_color_manual( values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8", "#6600CC" ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
   geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.2))+
-  ylab(bquote(C:N))+
+  ylab('Nitrate IC')+
   xlab("")+
   #ylim(0,1)+
   scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Upper Tundra"))+
@@ -563,23 +565,31 @@ ggplot()+
   theme(legend.title = element_text(size = 16))
 
 #write.csv(core_site20s, "Site_FDOMdata.csv")
+
+############## Applying linear regression to convert FDOM time series to DOC
+DOC21TS <- 0.069*FDOM21TS[2:7]+0.377
+DOC21TS <-  cbind(FDOM21TS[1], DOC21TS)
+
+DOC22TS <- 0.069*FDOM22TS[2:6]+0.377
+DOC22TS <-  cbind(FDOM22TS[1], DOC22TS)
+
 ########## Creating a multi-panel plot of the full two years of data ######################
 
 #FDOM data 
   ts1<- ggplot()+
-    geom_point(data = FDOM21TS, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
-    geom_point(data = FDOM21TS, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
-    geom_point(data = FDOM21TS, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
-    geom_point(data = FDOM21TS, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
-    geom_point(data = FDOM21TS, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
-    geom_point(data = FDOM21TS, aes(x=datetime, y= glacier), color = "#0084A8", size = 0.2)+
+    geom_point(data = DOC21TS, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
+    geom_point(data = DOC21TS, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
+    geom_point(data = DOC21TS, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
+    geom_point(data = DOC21TS, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
+    geom_point(data = DOC21TS, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
+    geom_point(data = DOC21TS, aes(x=datetime, y= glacier), color = "#0084A8", size = 0.2)+
     
-    geom_point(data = FDOM22TS, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
-    geom_point(data = FDOM22TS, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
-    geom_point(data = FDOM22TS, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
-    geom_point(data = FDOM22TS, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
-    geom_point(data = FDOM22TS, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
-    ylab("fDOM (QSU)")+
+    geom_point(data = DOC22TS, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
+    geom_point(data = DOC22TS, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
+    geom_point(data = DOC22TS, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
+    geom_point(data = DOC22TS, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
+    geom_point(data = DOC22TS, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
+    ylab(bquote('DOC' (mgl^-1)))+
     xlab('')+
     theme_cust()
     
@@ -612,23 +622,23 @@ ggplot()+
   Rsep21 <- Precip_q_ts %>%
    filter(as.POSIXct(datetime) >= bounds_Rsep21[1], as.POSIXct(datetime) <= bounds_Rsep21[2]) 
   
-    Rsep21FDOM <- FDOM21TS %>%
+    Rsep21DOC <- DOC21TS %>%
       filter(as.POSIXct(datetime) >= bounds_Rsep21[1], as.POSIXct(datetime) <= bounds_Rsep21[2]) 
     
-    maxRange <- 100 # set how wide of the first axis (streamflow)
-    coeff <- .1 # set the shrink coeffcient of Precipitation
+    maxRange <- 10 # set how wide of the first axis (streamflow)
+    coeff <- 1 # set the shrink coeffcient of Precipitation
   
      ggplot()+
-    geom_point(data = Rsep21FDOM, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
-    geom_point(data = Rsep21FDOM, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
-    geom_point(data = Rsep21FDOM, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
-    geom_point(data = Rsep21FDOM, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
-    geom_point(data = Rsep21FDOM, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
-    geom_point(data = Rsep21FDOM, aes(x=datetime, y= glacier), color = "#0084A8", size = 0.2)+
+    geom_point(data = Rsep21DOC, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
+    geom_point(data = Rsep21DOC, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
+    geom_point(data = Rsep21DOC, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
+    geom_point(data = Rsep21DOC, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
+    geom_point(data = Rsep21DOC, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
+    geom_point(data = Rsep21DOC, aes(x=datetime, y= glacier), color = "#0084A8", size = 0.2)+
    
-    geom_line(data = Rsep21, aes(x=datetime, y= Q/10), color = 'black', size = 0.5)+
+    geom_line(data = Rsep21, aes(x=datetime, y= Q/100), color = 'black', size = 0.5)+
     geom_tile(data = Rsep21, aes(x=datetime, y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'darkslateblue', fill = 'darkslateblue')+ 
-    scale_y_continuous(name = 'fDOM (QSU)',limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
+    scale_y_continuous(name = 'DOC (mg l-1)',limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
     xlim(bounds_Rsep21)+
     xlab('')+
     theme_cust()+
@@ -642,22 +652,22 @@ ggplot()+
      Rjul22 <- Precip_q_ts %>%
        filter(as.POSIXct(datetime) >= bounds_Rjul22[1], as.POSIXct(datetime) <= bounds_Rjul22[2]) 
      
-     Rjul22FDOM <- FDOM22TS %>%
+     Rjul22DOC <- DOC22TS %>%
        filter(as.POSIXct(datetime) >= bounds_Rjul22[1], as.POSIXct(datetime) <= bounds_Rjul22[2]) 
      
-     maxRange <- 100 # set how wide of the first axis (streamflow)
-     coeff <- .1 # set the shrink coeffcient of Precipitation
+     maxRange <- 10 # set how wide of the first axis (streamflow)
+     coeff <- 1 # set the shrink coeffcient of Precipitation
      
      ggplot()+
-       geom_point(data = Rjul22FDOM, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
-       geom_point(data = Rjul22FDOM, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
-       geom_point(data = Rjul22FDOM, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
-       geom_point(data = Rjul22FDOM, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
-       geom_point(data = Rjul22FDOM, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
+       geom_point(data = Rjul22DOC, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
+       geom_point(data = Rjul22DOC, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
+       geom_point(data = Rjul22DOC, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
+       geom_point(data = Rjul22DOC, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
+       geom_point(data = Rjul22DOC, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
        
-       geom_line(data = Rjul22, aes(x=datetime, y= Q/10), color = 'black', size = 0.5)+
+       geom_line(data = Rjul22, aes(x=datetime, y= Q/100), color = 'black', size = 0.5)+
        geom_tile(data = Rjul22, aes(x=datetime, y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'darkslateblue', fill = 'darkslateblue')+ 
-       scale_y_continuous(name = 'fDOM (QSU)',limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
+       scale_y_continuous(name = 'DOC (mg l-1)',limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
        xlim(bounds_Rjul22)+
        
        xlab('')+
@@ -672,22 +682,22 @@ ggplot()+
      Mmay22 <- Precip_q_ts %>%
        filter(as.POSIXct(datetime) >= bounds_Mmay22[1], as.POSIXct(datetime) <= bounds_Mmay22[2]) 
      
-     Mmay22FDOM <- FDOM22TS %>%
+     Mmay22DOC <- DOC22TS %>%
        filter(as.POSIXct(datetime) >= bounds_Mmay22[1], as.POSIXct(datetime) <= bounds_Mmay22[2]) 
      
-     maxRange <- 25 # set how wide of the first axis (streamflow)
-     coeff <- .1 # set the shrink coeffcient of Precipitation
+     maxRange <- 3 # set how wide of the first axis (streamflow)
+     coeff <- 1 # set the shrink coeffcient of Precipitation
      
      ggplot()+
-       geom_point(data = Mmay22FDOM, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
-       geom_point(data = Mmay22FDOM, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
-       geom_point(data = Mmay22FDOM, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
-       geom_point(data = Mmay22FDOM, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
-       geom_point(data = Mmay22FDOM, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
+       geom_point(data = Mmay22DOC, aes(x=datetime, y= forest), color = "#E2725B", size = 0.2)+
+       geom_point(data = Mmay22DOC, aes(x=datetime, y= tundra), color = "#A80084", size = 0.2 )+
+       geom_point(data = Mmay22DOC, aes(x=datetime, y= shrub), color = "#FFAA00", size = 0.2)+
+       geom_point(data = Mmay22DOC, aes(x=datetime, y= nellie), color = "#EA9DFF", size = 0.2)+
+       geom_point(data = Mmay22DOC, aes(x=datetime, y= gage), color = "#73DFFF", size = 0.2)+
        
-       geom_line(data = Mmay22, aes(x=datetime, y= Q/10), color = 'black', size = 0.5)+
+       geom_line(data = Mmay22, aes(x=datetime, y= Q/100), color = 'black', size = 0.5)+
        geom_tile(data = Mmay22, aes(x=datetime, y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'darkslateblue', fill = 'darkslateblue')+ 
-       scale_y_continuous(name = 'fDOM (QSU)',limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
+       scale_y_continuous(name = 'DOC (mg l-1)',limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
        xlim(bounds_Mmay22)+
        
        xlab('')+
@@ -711,7 +721,7 @@ ggplot()+
     theme(axis.title = element_text(size = 16))    
 
   
-  ################ Calculating API for time period surrounding example fall rain events ##############
+  ################ Calculating API for time period surrounding example fall rain events  and comparing to a running average ##############
  
   # Defining the get API function 
   getApi <- function(x,k=0.9,n=5,finite=TRUE) {
@@ -744,12 +754,34 @@ ggplot()+
   API_990 <- getApi(day_sum$precip2, k = 0.9, n= 7) 
   day_sum <- data.frame(day_sum,API_990) 
   
-  bounds_sub<- as.POSIXct(c('08/16/2022 00:00:00','08/22/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+  ans <-day_sum$API_990[day_sum$datetime == bounds_sub[1]] #Finding an API for a specific time
+  
+  
+  ######### Calculating a running average for Q ###############
+  swindow <- 192 #Setting smoothing window
+  
+  gauge_data<- gauge_data %>%
+    mutate(datetime = with_tz(datetime, tz = 'America/Anchorage'),
+         Q_mm_d = (Q_m3s/(9.4*2.59e6))*1000, #normalizing Q by wtrshd area and converting to mm 
+         Q_filled = na_interpolation(Q_mm_d, option = 'linear', maxgap = Inf),
+         Q_smoothed = rollapply(Q_mm_d,swindow,mean, na.rm = TRUE, fill = NA))
+  
+   gage_daily <- gauge_data %>%
+      mutate(datetime_daily = cut(datetime, 'day')) %>%
+      group_by(datetime_daily) %>% 
+      summarise(Q_mean = mean(Q_filled)) %>%
+      na.omit() %>%
+      mutate(Q_mean = Q_mean*60*60*24,
+             Rmean_07da = zoo::rollmean(Q_mean, k = 7, fill = NA),
+             datetime_daily = with_tz(datetime_daily, tz = 'America/Anchorage'))
+     
+  #### Plotting #########
+  bounds_sub<- as.POSIXct(c('05/01/2022 00:00:00','10/05/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
   bounds_sub2<- as.POSIXct(c('09/09/2021 00:00:00','09/15/2021 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
   
   ggplot()+
     geom_line(data = day_sum, aes(x=datetime, y= API_990), color = 'black', size = 0.5)+
-    #scale_y_continuous('fDOM (QSU)', sec.axis = sec_axis(~.*10, name = expression(paste("Discharge (ft"^"3","s"^"-1", ")")))) +
+    geom_line(data = gage_daily, aes(x=datetime_daily, y= Rmean_07da), color = 'blue', size = 0.5)+
     ylim(0,70)+
     xlim(bounds_sub)+
     #ylab("fDOM (QSU)")+
@@ -758,5 +790,28 @@ ggplot()+
     theme(axis.text = element_text(size = 16))+
     theme(axis.title = element_text(size = 16)) 
   
-  ans <-day_sum$API_990[day_sum$datetime == bounds_sub[1]]
+############# Calculating DOC fluxes ##############################
+  
+  #2022 
+  bounds_DOCFlux<- as.POSIXct(c('01/01/2022 00:00:00','01/01/2023 00:00:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+  
+  Q_flux <- Precip_q_ts %>%
+    filter(as.POSIXct(datetime) >= bounds_DOCFlux[1], as.POSIXct(datetime) <= bounds_DOCFlux[2]) 
+  
+  DOC22TS <- DOC22TS %>%
+    mutate(gage_flux_kgha15min = gage/0.001*3600*24*1e-6/2707/4/24*Q_flux$Q_m3s,
+           cum_flux = cumsum(coalesce(gage_flux_kgha15min, 0)) + gage_flux_kgha15min*0)
+   
+  ggplot()+
+    geom_line(data = DOC22TS, aes(x=datetime, y = gage), color = 'black', size = 0.5)+
+    geom_point(data = DOC22TS, aes(x=datetime, y= cum_flux), color = '#006633', size = 0.5)+
+    geom_line(data = Q_flux, aes(x=datetime, y= Q_m3s/10), color = 'blue', size = 0.5)+
+    xlab('')+
+    xlim(bounds_sub)+
+    theme_cust()+
+    theme(axis.text = element_text(size = 16))+
+    theme(axis.title = element_text(size = 16)) 
+  
+  
+
   
