@@ -573,6 +573,14 @@ DOC21TS <-  cbind(FDOM21TS[1], DOC21TS)
 DOC22TS <- 0.069*FDOM22TS[2:6]+0.377
 DOC22TS <-  cbind(FDOM22TS[1], DOC22TS)
 
+### Loading the corrected 2022 gage FDOM data and applying regression for new DOC TS
+Gage_Cor_FDOM22 <- read.csv('wolv_gage_corr_fdom18jun23.csv')%>%
+  rename( datetime = ISO.8601.UTC, FDOM = Value)
+
+Gage_Cor_FDOM22$datetime <- as.POSIXct(Gage_Cor_FDOM22$datetime, "%Y-%m-%dT%H:%M:%S", tz="UTC")
+Gage_Cor_FDOM22$DOC <-0.069* Gage_Cor_FDOM22$FDOM+0.377 
+
+
 ########## Creating a multi-panel plot of the full two years of data ######################
 
 #FDOM data 
@@ -793,14 +801,18 @@ DOC22TS <-  cbind(FDOM22TS[1], DOC22TS)
 ############# Calculating DOC fluxes ##############################
   
   #2022 
-  bounds_DOCFlux<- as.POSIXct(c('01/01/2022 00:00:00','01/01/2023 00:00:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+  bounds_DOCFlux<- as.POSIXct(c('05/04/2022 09:00:00','10/24/2023 08:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
   
-  Q_flux <- Precip_q_ts %>%
+  Q_flux_short <- Precip_q_ts %>%
     filter(as.POSIXct(datetime) >= bounds_DOCFlux[1], as.POSIXct(datetime) <= bounds_DOCFlux[2]) 
   
-  DOC22TS <- DOC22TS %>%
-    mutate(gage_flux_kgha15min = gage/0.001*3600*24*1e-6/2707/4/24*Q_flux$Q_m3s,
-           cum_flux = cumsum(coalesce(gage_flux_kgha15min, 0)) + gage_flux_kgha15min*0)
+  Gage_Cor_FDOM22 <- Gage_Cor_FDOM22 %>%
+   mutate(gage_flux_kgha15min = DOC/0.001*3600*24*1e-6/2707/4/24*Q_flux$Q_m3s,
+         cum_flux = cumsum(coalesce(gage_flux_kgha15min, 0)) + gage_flux_kgha15min*0) 
+  
+  #DOC22TS <- DOC22TS %>%
+   # mutate(gage_flux_kgha15min = gage/0.001*3600*24*1e-6/2707/4/24*Q_flux$Q_m3s,
+    #       cum_flux = cumsum(coalesce(gage_flux_kgha15min, 0)) + gage_flux_kgha15min*0)
    
   ggplot()+
     geom_line(data = DOC22TS, aes(x=datetime, y = gage), color = 'black', size = 0.5)+
