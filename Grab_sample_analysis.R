@@ -801,10 +801,10 @@ Gage_Cor_FDOM22$DOC <-0.069* Gage_Cor_FDOM22$FDOM+0.377
 ############# Calculating DOC fluxes ##############################
   
   #2022 
-  bounds_DOCFlux<- as.POSIXct(c('05/04/2022 09:00:00','10/24/2023 08:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+  bounds_DOCFlux<- as.POSIXct(c('04/25/2022 09:00:00','10/24/2022 08:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
   
   Q_flux_short <- Precip_q_ts %>%
-    filter(as.POSIXct(datetime) >= bounds_DOCFlux[1], as.POSIXct(datetime) <= bounds_DOCFlux[2]) 
+    filter(as.POSIXct(datetime, TZ = "America/Anchorage") >= bounds_DOCFlux[1], as.POSIXct(datetime, TZ = "America/Anchorage") <= bounds_DOCFlux[2]) 
   
   Gage_Cor_FDOM22 <- Gage_Cor_FDOM22 %>%
    mutate(gage_flux_kgha15min = DOC/0.001*3600*24*1e-6/2707/4/24*Q_flux$Q_m3s,
