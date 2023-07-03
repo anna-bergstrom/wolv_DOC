@@ -801,13 +801,14 @@ Gage_Cor_FDOM22$DOC <-0.069* Gage_Cor_FDOM22$FDOM+0.377
 ############# Calculating DOC fluxes ##############################
   
   #2022 
-  bounds_DOCFlux<- as.POSIXct(c('04/25/2022 09:00:00','10/24/2022 08:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
-  
+  bounds_DOCFlux<- c('04/25/2022 09:00:00','10/24/2022 08:45:00')
+  bounds_DOCFlux<-as.POSIXct(bounds_DOCFlux,"America/Anchorage", format="%m/%d/%Y %H:%M:%S")   
+
   Q_flux_short <- Precip_q_ts %>%
-    filter(as.POSIXct(datetime, TZ = "America/Anchorage") >= bounds_DOCFlux[1], as.POSIXct(datetime, TZ = "America/Anchorage") <= bounds_DOCFlux[2]) 
+    filter(as.POSIXct(datetime) >= bounds_DOCFlux[1], as.POSIXct(datetime) <= bounds_DOCFlux[2])
   
   Gage_Cor_FDOM22 <- Gage_Cor_FDOM22 %>%
-   mutate(gage_flux_kgha15min = DOC/0.001*3600*24*1e-6/2707/4/24*Q_flux$Q_m3s,
+   mutate(gage_flux_kgha15min = DOC/0.001*3600*24*1e-6/2707/4/24*Q_flux_short$Q_m3s,
          cum_flux = cumsum(coalesce(gage_flux_kgha15min, 0)) + gage_flux_kgha15min*0) 
   
   #DOC22TS <- DOC22TS %>%
@@ -815,9 +816,9 @@ Gage_Cor_FDOM22$DOC <-0.069* Gage_Cor_FDOM22$FDOM+0.377
     #       cum_flux = cumsum(coalesce(gage_flux_kgha15min, 0)) + gage_flux_kgha15min*0)
    
   ggplot()+
-    geom_line(data = DOC22TS, aes(x=datetime, y = gage), color = 'black', size = 0.5)+
-    geom_point(data = DOC22TS, aes(x=datetime, y= cum_flux), color = '#006633', size = 0.5)+
-    geom_line(data = Q_flux, aes(x=datetime, y= Q_m3s/10), color = 'blue', size = 0.5)+
+    geom_line(data = Gage_Cor_FDOM22, aes(x=datetime, y = DOC*10), color = 'black', size = 0.5)+
+    geom_point(data = Gage_Cor_FDOM22, aes(x=datetime, y= cum_flux), color = '#006633', size = 0.5)+
+    geom_line(data = Q_flux_short, aes(x=datetime, y= Q_m3s), color = 'blue', size = 0.5)+
     xlab('')+
     xlim(bounds_sub)+
     theme_cust()+
@@ -825,5 +826,31 @@ Gage_Cor_FDOM22$DOC <-0.069* Gage_Cor_FDOM22$FDOM+0.377
     theme(axis.title = element_text(size = 16)) 
   
   
+max(Gage_Cor_FDOM22$cum_flux, na.rm = TRUE)
+
+##################### Calculating Flashiness indices for DOC ts ##################
+
+
+ratio_numer <- abs(DOC22TS[2:length(DOC22TS$forest),2:6]-DOC22TS[1:length(DOC22TS$forest)-1, 2:6]) %>%
+  mutate(datetime = DOC22TS$datetime[2:length(DOC22TS$datetime)]) %>%
+  mutate(week = week(datetime))
+
+ ratio_numer_week <- group_by(ratio_numer,week) %>%
+   subset(select = -datetime)
+ 
+ ratio_numer_sum <- ratio_numer_week %>%
+    summarize(across(everything(), funs(sum(.,na.rm = TRUE))))
+ 
+ ratio_denom <- DOC22TS[2:length(DOC22TS$forest),1:6] %>%
+   mutate(week = week(datetime)) %>%
+   group_by(week)%>%
+   subset(select = -datetime)
+ 
+ ratio_denom_sum <- ratio_denom %>%
+   summarize(across(everything(), funs(sum(.,na.rm = TRUE))))
+ 
+ FI = ratio_numer_sum [,2:6]/ratio_denom_sum[,2:6]
+
+
 
   
