@@ -849,8 +849,22 @@ ratio_numer <- abs(DOC22TS[2:length(DOC22TS$forest),2:6]-DOC22TS[1:length(DOC22T
  ratio_denom_sum <- ratio_denom %>%
    summarize(across(everything(), funs(sum(.,na.rm = TRUE))))
  
- FI = ratio_numer_sum [,2:6]/ratio_denom_sum[,2:6]
+ FI <- ratio_numer_sum [,2:6]/ratio_denom_sum[,2:6] 
+   FI <- FI %>% mutate(week = 1:53)
 
+ ggplot()+
+   geom_point(data = FI, aes(x=week, y= forest_sum), color = "#E2725B", size = 3)+
+   geom_point(data = FI, aes(x=week, y= shrub_sum), color = "#FFAA00", size = 3)+
+   geom_point(data = FI, aes(x=week, y= tundra_sum), color = "#A80084", size = 3)+
+   geom_point(data = FI, aes(x=week, y= nellie_sum), color =  "#EA9DFF", size = 3)+
+   geom_point(data = FI, aes(x=week, y= gage_sum), color = "#73DFFF", size = 3)+
+   xlab('Week of year 2022')+
+   ylab('Flashiness Index')+
+   #xlim(bounds_sub)+
+   theme_cust()+
+   theme(axis.text = element_text(size = 16))+
+   theme(axis.title = element_text(size = 16)) 
+ 
 
 
   
