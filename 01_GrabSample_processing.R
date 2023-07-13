@@ -26,5 +26,5 @@ core_sites <- full_data %>%
   filter(Site == "Forest" | Site == "Nellie_Juan" | Site == "shrub_creek" | Site == "Tundra" |Site == "stream_gauge" | Site == "Terminus" |Site == "glacier_hut" | Site == "lake_inlet")
 
 ## Save output 
-readr::write_csv(core_sites, file = file.path("outputs", "01_grabsample_full_data.csv"))
+readr::write_csv(full_data, file = file.path("outputs", "01_grabsample_full_data.csv"))
 readr::write_csv(core_sites, file = file.path("outputs", "01_grabsample_core_sites.csv"))
