@@ -13,6 +13,7 @@ library(dygraphs)
 library(factoextra)
 library(dataRetrieval)
 library(cowplot)
+library(NADA)
 
 # Setting up paths for data and scripts
 
