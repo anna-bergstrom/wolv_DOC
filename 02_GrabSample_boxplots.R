@@ -24,7 +24,7 @@ max_threshold <- DOC_table %>%
   filter(doc_detect == TRUE) %>%
   summarise(max = max(DOC))
 
-DOC_plot = ggplot(cendf_DOC, aes(x= factor(group, level = c("Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "lake_inlet", "stream_gauge" ,"Terminus" , "glacier_hut")), y=ros.model, fill= as.factor(group))) +
+DOC_plot = ggplot(cendf_DOC, aes(x= factor(group, level = c("Terminus" ,  "stream_gauge" ,"glacier_hut","Nellie_Juan" ,"Tundra" , "lake_inlet","shrub_creek" ,"Forest" )), y=ros.model, fill= as.factor(group))) +
   geom_boxplot(coef=1.5
                , outlier.shape = NA) +
   scale_fill_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage, col.term, col.glacier, col.lake_in ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
@@ -41,8 +41,6 @@ DOC_plot = ggplot(cendf_DOC, aes(x= factor(group, level = c("Forest" , "Nellie_J
 
 print(DOC_plot)
 
-#next need to do a series of pairwise combinations to determine differences, try expand.grid or aggregate 
-
 # Censored data statistics for NO3
 no3_table <- core_sites [!is.na(core_sites$Nitrate),]
 site <- as.factor(no3_table$Site)
@@ -55,7 +53,7 @@ max_threshold <- no3_table %>%
   filter(NO3_detect == TRUE) %>%
   summarise(max = max(Nitrate))
 
-NO3_plot = ggplot(cendf_NO3, aes(x=factor(group, level = c("Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "lake_inlet", "stream_gauge" ,"Terminus" , "glacier_hut")), y=ros.model, fill= as.factor(group))) +
+NO3_plot = ggplot(cendf_NO3, aes(x=factor(group, level = c("Terminus" ,  "stream_gauge" ,"glacier_hut","Nellie_Juan" ,"Tundra" , "lake_inlet","shrub_creek" ,"Forest" )), y=ros.model, fill= as.factor(group))) +
   geom_boxplot(coef=1.5
                , outlier.shape = NA) +
   scale_fill_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage, col.term, col.glacier, col.lake_in ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
@@ -72,6 +70,34 @@ NO3_plot = ggplot(cendf_NO3, aes(x=factor(group, level = c("Forest" , "Nellie_Ju
 
 print(NO3_plot)
 
+#A series of pairwise combinations to determine differences
+
+# make dataframe for pairwise comparisons, remove duplicates, and create columns to populate with p-values
+site1 <- factor(c("Terminus" ,  "stream_gauge" ,"glacier_hut","Nellie_Juan" ,"Tundra" , "lake_inlet","shrub_creek" ,"Forest" ))
+site2 <- factor(c("Terminus" ,  "stream_gauge" ,"glacier_hut","Nellie_Juan" ,"Tundra" , "lake_inlet","shrub_creek" ,"Forest" ))
+data_comp <- expand.grid(site1,site2) %>%
+  filter(Var1 != Var2) %>%
+  mutate(DOC_p = NaN, DOC_Sig = NaN, NO3_p = NaN, NO3_Sig = NaN) 
+
+for (i in 1:nrow(data_comp)){
+  pairwise <- DOC_table %>%
+    filter(Site == data_comp$Var1[i]|Site==data_comp$Var2[i])
+  P_sites<- as.factor(pairwise$Site)
+  temp <- cendiff(pairwise$DOC, pairwise$doc_detect, P_sites)
+  p.val <- 1 - pchisq(temp$chisq, length(temp$n) - 1)
+  data_comp$DOC_p[i]<-p.val
+  data_comp$DOC_Sig[i]<- p.val<0.05
+  
+  pairwise <- no3_table %>%
+    filter(Site == data_comp$Var1[i]|Site==data_comp$Var2[i])
+  P_sites<- as.factor(pairwise$Site)
+  temp <- cendiff(pairwise$Nitrate, pairwise$NO3_detect, P_sites)
+  p.val <- 1 - pchisq(temp$chisq, length(temp$n) - 1)
+  data_comp$NO3_p[i]<-p.val
+  data_comp$NO3_Sig[i]<- p.val<0.05
+}
+
+data_comp<- data_comp %>% distinct(DOC_p, .keep_all = TRUE)
 
 #Censored data stats for PO4 
 # just basically to see that too many points below detection limit to do much 
