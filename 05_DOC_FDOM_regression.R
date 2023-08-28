@@ -4,15 +4,21 @@
 
 source("paths+packages.R")
 
-# load necesscary data
-FDOM21 <- read.csv('outputs/04_FDOM21TS.csv')
-FDOM22 <- read.csv('outputs/04_FDOM22TS.csv')
+# load necessary data
+FDOM21TS <- read.csv('outputs/04_FDOM21TS.csv')
+FDOM22TS <- read.csv('outputs/04_FDOM22TS.csv')
 core_sites <- read.csv('outputs/01_grabsample_core_sites.csv') 
 
-core_sites$Datetime <- as.Date(core_sites$Datetime)
+# Convert ISO datestrings to datetime type 
+# All times were converted to UTC in previous processing scripts - we'll just work in UTC for consistency here
+FDOM21TS$datetime <- strptime(FDOM21TS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+FDOM22TS$datetime <- strptime(FDOM22TS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+core_sites$Datetime <- strptime(core_sites$Datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+
+core_sites <- mutate(core_sites, doc_detect = if_else(DOC< 0.5, TRUE, FALSE))
 rep_str = c('stream_gauge' = 'gage','Forest'= 'forest', 'shrub_creek' = 'shrub', 'Tundra' = 'tundra', 'Nellie_Juan' = 'nellie', 'glacier_hut' = 'glacier')
 core_sites$Site <- str_replace_all(core_sites$Site, rep_str)
-core_sites$Datetime <- round_date(core_sites$Datetime, "15 minutes")
+core_sites$Datetime <- round_date(as.POSIXct(core_sites$Datetime), "15 mins")
 
 core_lab22 <- core_sites[core_sites$yearS == 2022,] 
 core_lab21 <- core_sites[core_sites$yearS == 2021,]
@@ -52,3 +58,23 @@ for (i in 2:6){
 } 
 
 core_site20s <- rbind(core_lab21, core_lab22)
+
+#plot with just sonde FDOM v.s. DOC 
+ggplot(core_site20s, aes(x=Sonde, y = DOC, color =as.factor(Site), group = 1))+
+  scale_color_manual(values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF",  "#0084A8", "#059E41" , "#6600CC"),breaks = c( "forest" , "nellie" , "shrub" , "tundra" , "gage" , "glacier"),labels = c("Forest", "Nellie Juan" , "Shrub" , "Tundra" , "Gage" ,  "Glacier"))+
+  geom_point(size = 3, alpha = 0.7)+
+  geom_smooth(method = "lm",formula = y~x, color = 'black')+
+  theme_cust()+
+  theme(legend.position = c(0.2,0.75)) +
+  labs(color = "Site")+
+  xlab("Sonde fDOM (qsu)")+
+  ylab(bquote('DOC' (mgl^-1)))+  
+  theme(aspect.ratio = 1/1)+
+  theme(axis.text = element_text(size = 16))+
+  theme(axis.title = element_text(size = 16))+
+  theme(legend.text = element_text(size = 12))+
+  theme(legend.title = element_text(size = 16))
+
+core_site20s <- core_site20s[!is.na(core_site20s$doc_detect),]
+
+cenken(core_site20s$DOC, core_site20s$doc_detect, core_site20s$Sonde, core_site20s$doc_detect)
