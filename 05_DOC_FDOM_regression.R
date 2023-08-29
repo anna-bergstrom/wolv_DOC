@@ -59,11 +59,28 @@ for (i in 2:6){
 
 core_site20s <- rbind(core_lab21, core_lab22)
 
+core_site20s <- core_site20s[!is.na(core_site20s$Sonde),] 
+
+core_site20s <- mutate(core_site20s, FDOM_detect = if_else(Sonde > 0, FALSE, TRUE))
+
+cen_model <- cenken(core_site20s$DOC, core_site20s$doc_detect, core_site20s$Sonde, core_site20s$FDOM_detect)
+
+# NADA package default plotting
+# Plotting data and the regression line
+data(core_site20s)
+# Recall x and y parameter positons are swapped in plot vs regression calls
+with(core_site20s, cenxyplot(Sonde, FDOM_detect, DOC, doc_detect))    # x vs. y
+reg = with(core_site20s, cenken(DOC, doc_detect, Sonde, FDOM_detect)) # y~x
+lines(reg)
+
+#Fitting regression model
+cen_model <- cenken(core_site20s$DOC, core_site20s$doc_detect, core_site20s$Sonde, core_site20s$FDOM_detect)
+
 #plot with just sonde FDOM v.s. DOC 
 ggplot(core_site20s, aes(x=Sonde, y = DOC, color =as.factor(Site), group = 1))+
   scale_color_manual(values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF",  "#0084A8", "#059E41" , "#6600CC"),breaks = c( "forest" , "nellie" , "shrub" , "tundra" , "gage" , "glacier"),labels = c("Forest", "Nellie Juan" , "Shrub" , "Tundra" , "Gage" ,  "Glacier"))+
   geom_point(size = 3, alpha = 0.7)+
-  geom_smooth(method = "lm",formula = y~x, color = 'black')+
+  geom_abline(aes(slope=cen_model$slope,intercept=cen_model$intercept,color="black"))+
   theme_cust()+
   theme(legend.position = c(0.2,0.75)) +
   labs(color = "Site")+
@@ -75,6 +92,8 @@ ggplot(core_site20s, aes(x=Sonde, y = DOC, color =as.factor(Site), group = 1))+
   theme(legend.text = element_text(size = 12))+
   theme(legend.title = element_text(size = 16))
 
-core_site20s <- core_site20s[!is.na(core_site20s$doc_detect),]
+# Save fit model for use in TS analysis
+# For some reason I need the full file path 
+saveRDS(cen_model, file = "/Users/annabergstrom/BSU_drive/Projects/AK_post-doc/DOC/wolv_DOC/outputs/DOC_fdom_model.RData")
 
-cenken(core_site20s$DOC, core_site20s$doc_detect, core_site20s$Sonde, core_site20s$doc_detect)
+

@@ -142,34 +142,34 @@ ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= Phosphate_P, color= 
 
 ########## No longer used ##############
 # DOC boxplot
-ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= DOC, color= as.factor(Site))) +
-  scale_color_manual( values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage, col.term, col.glacier, col.lake_in ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
-  geom_boxplot(outlier.shape =  NA) +
-  geom_jitter(shape=16, position=position_jitter(0.2))+
-  ylab(bquote('DOC' (mgl^-1)))+
-  xlab("")+
-  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Upper Tundra"))+
-  theme_cust() +
-  theme(axis.text.x=element_text(angle = -45, hjust = 0))+
-  theme(legend.position = "none")+ 
-  theme(aspect.ratio = 1/1)+
-  theme(axis.text = element_text(size = 16))+
-  theme(axis.title = element_text(size = 16))  
+#ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= DOC, color= as.factor(Site))) +
+ # scale_color_manual( values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage, col.term, col.glacier, col.lake_in ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
+#  geom_boxplot(outlier.shape =  NA) +
+#  geom_jitter(shape=16, position=position_jitter(0.2))+
+ # ylab(bquote('DOC' (mgl^-1)))+
+#  xlab("")+
+ # scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Upper Tundra"))+
+ # theme_cust() +
+ # theme(axis.text.x=element_text(angle = -45, hjust = 0))+
+#  theme(legend.position = "none")+ 
+  #theme(aspect.ratio = 1/1)+
+ # theme(axis.text = element_text(size = 16))+
+ # theme(axis.title = element_text(size = 16))  
 
 
 # Nitrate boxplot
-ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= Nitrate, color= as.factor(Site))) +
-  scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage, col.term, col.glacier, col.lake_in), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
-  geom_boxplot(outlier.shape =  NA) +
-  geom_jitter(shape=16, position=position_jitter(0.2))+
-  ylab(bquote('Nitrate' (mgl^-1)))+
-  xlab("")+
-  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Upper Tundra"))+
-  theme_cust() +
-  theme(axis.text.x=element_text(angle = -45, hjust = 0))+
-  theme(legend.position = "none")+ 
-  theme(aspect.ratio = 1/1)+
-  theme(axis.text = element_text(size = 16))+
-  theme(axis.title = element_text(size = 16))
+#ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= Nitrate, color= as.factor(Site))) +
+ # scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage, col.term, col.glacier, col.lake_in), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
+ # geom_boxplot(outlier.shape =  NA) +
+ # geom_jitter(shape=16, position=position_jitter(0.2))+
+ # ylab(bquote('Nitrate' (mgl^-1)))+
+  #xlab("")+
+#  scale_x_discrete(labels=c("Forest" = "Forest", "Nellie_Juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "Tundra"= "Tundra" , "stream_gauge"= "Gage" ,"Terminus" =  "Terminus", "glacier_hut" = "Glacier", "lake_inlet" = "Upper Tundra"))+
+ # theme_cust() +
+ # theme(axis.text.x=element_text(angle = -45, hjust = 0))+
+  #theme(legend.position = "none")+ 
+ # theme(aspect.ratio = 1/1)+
+ # theme(axis.text = element_text(size = 16))+
+  #theme(axis.title = element_text(size = 16))
 
 
