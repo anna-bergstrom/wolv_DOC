@@ -92,6 +92,14 @@ DOC_lost17 <- data.frame(DOC_lost17,incub_names17,DOC_init17) %>%
   rename(Site = incub_names17)
 
 
+ggplot()+
+  geom_point(data = DOC_lost17, aes(x=DOC_init17, y = DOC_lost17,  color =Site), shape = 15, size = 3)+
+  geom_point(data = DOC_lost22, aes(x=DOC_init22, y = DOC_lost22,  color =Site), size = 3)+
+  scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.term, col.glacier, col.lake_in, col.glacier, col.term, col.nellie), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra"  ,"Terminus" , "Glacier", "lake inlet", 'glacial', 'terminus', 'nellie_juan'))+
+  theme_cust()+
+  ylim(0,75)+
+  ylab("DOC percent lost")+
+  xlab("Initial DOC") 
 
 # More code for plotting 14C data against incubation data is in original Grab_sample_analysis.R script 
 #- as of right now, they aren't going to be used in the paper so they weren't ported over 
