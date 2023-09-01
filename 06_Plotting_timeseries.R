@@ -121,3 +121,32 @@ ggplot()+
   theme_cust()+
   theme(axis.text = element_text(size = 16))+
   theme(axis.title = element_text(size = 16))
+
+########## Snow melt 2022 ##########
+bounds_Mmay22<- as.POSIXct(c('05/16/2022 00:00:00','05/29/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+
+Mmay22 <- Precip_Q %>%
+  filter(as.POSIXct(datetime) >= bounds_Mmay22[1], as.POSIXct(datetime) <= bounds_Mmay22[2]) 
+
+Mmay22DOC <- DOC22TS %>%
+  filter(as.POSIXct(datetime) >= bounds_Mmay22[1], as.POSIXct(datetime) <= bounds_Mmay22[2]) 
+
+maxRange <- 3 # set how wide of the first axis (streamflow)
+coeff <- 1 # set the shrink coeffcient of Precipitation
+
+ggplot()+
+  geom_point(data = Mmay22DOC, aes(x=as.POSIXct(datetime), y= forest), color = "#E2725B", size = 0.2)+
+  geom_point(data = Mmay22DOC, aes(x=as.POSIXct(datetime), y= tundra), color = "#A80084", size = 0.2 )+
+  geom_point(data = Mmay22DOC, aes(x=as.POSIXct(datetime), y= shrub), color = "#FFAA00", size = 0.2)+
+  geom_point(data = Mmay22DOC, aes(x=as.POSIXct(datetime), y= nellie), color = "#EA9DFF", size = 0.2)+
+  geom_point(data = Mmay22DOC, aes(x=as.POSIXct(datetime), y= gage), color = "#73DFFF", size = 0.2)+
+  
+  geom_line(data = Mmay22, aes(x=as.POSIXct(datetime), y= Q/100), color = 'black', size = 0.5)+
+  geom_tile(data = Mmay22, aes(x=as.POSIXct(datetime), y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'darkslateblue', fill = 'darkslateblue')+ 
+  scale_y_continuous(name = 'DOC (mg l-1)',limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
+  xlim(bounds_Mmay22)+
+  
+  xlab('')+
+  theme_cust()+
+  theme(axis.text = element_text(size = 16))+
+  theme(axis.title = element_text(size = 16))

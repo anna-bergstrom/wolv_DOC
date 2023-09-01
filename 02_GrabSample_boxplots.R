@@ -8,7 +8,7 @@ source("paths+packages.R")
 core_sites <- read.csv('outputs/01_grabsample_core_sites.csv') 
 
 #!!!!!!!!!!! WE NEED TO DECIDE HOW TO DEAL WITH PRESENTING DATA BELOW ADVERTISED DETECTION LIMITS FOR DOC (0.5ppm), NO3 (0.02 ppm), PO4 (0.03ppm) 
-core_sites <- mutate(core_sites, doc_detect = if_else(DOC< 0.5, TRUE, FALSE)) %>%
+core_sites <- mutate(core_sites, doc_detect = if_else(DOC< 0.2, TRUE, FALSE)) %>%
   mutate(NO3_detect = if_else(Nitrate< 0.02, TRUE, FALSE))%>%
   mutate(PO4_detect = if_else(Phosphate_P< 0.03, TRUE, FALSE))
 
@@ -24,7 +24,7 @@ max_threshold <- DOC_table %>%
   filter(doc_detect == TRUE) %>%
   summarise(max = max(DOC))
 
-DOC_plot = ggplot(cendf_DOC, aes(x= factor(group, level = c("Terminus" ,  "stream_gauge" ,"glacier_hut","Nellie_Juan" ,"Tundra" , "lake_inlet","shrub_creek" ,"Forest" )), y=ros.model, fill= as.factor(group))) +
+DOC_plot = ggplot(cendf_DOC, aes(x= factor(group, level = c("glacier_hut","lake_inlet","Tundra" , "shrub_creek" ,"Forest" ,"Terminus" ,  "stream_gauge" ,"Nellie_Juan" )), y=ros.model, fill= as.factor(group))) +
   geom_boxplot(coef=1.5, outlier.shape = 19) +
   scale_fill_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage, col.term, col.glacier, col.lake_in ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
   geom_hline(yintercept = max_threshold[[1]], linetype="dashed", color = "#1A237E", size=1) +
@@ -52,7 +52,7 @@ max_threshold <- no3_table %>%
   filter(NO3_detect == TRUE) %>%
   summarise(max = max(Nitrate))
 
-NO3_plot = ggplot(cendf_NO3, aes(x=factor(group, level = c("Terminus" ,  "stream_gauge" ,"glacier_hut","Nellie_Juan" ,"Tundra" , "lake_inlet","shrub_creek" ,"Forest" )), y=ros.model, fill= as.factor(group))) +
+NO3_plot = ggplot(cendf_NO3, aes(x=factor(group, level = c("glacier_hut","lake_inlet","Tundra" , "shrub_creek" ,"Forest" ,"Terminus" ,  "stream_gauge" ,"Nellie_Juan" )), y=ros.model, fill= as.factor(group))) +
   geom_boxplot(coef=1.5, outlier.shape = 19) +
   scale_fill_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage, col.term, col.glacier, col.lake_in ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
   geom_hline(yintercept = max_threshold[[1]], linetype="dashed", color = "#1A237E", size=1) +
@@ -105,7 +105,7 @@ site <- as.factor(po4_table$Site)
 cenfit(po4_table$Phosphate_P, po4_table$PO4_detect, site)
 
 # Flourescence Index boxplot
-ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= FI, fill= as.factor(Site))) +
+ggplot(core_sites, aes(x=factor(Site, level = c("glacier_hut","lake_inlet","Tundra" , "shrub_creek" ,"Forest" ,"Terminus" ,  "stream_gauge" ,"Nellie_Juan" )), y= FI, fill= as.factor(Site))) +
   geom_boxplot(outlier.shape =  19) +
   scale_fill_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage, col.term, col.glacier, col.lake_in  ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
   #geom_jitter(shape=16, position=position_jitter(0.2))+
@@ -122,7 +122,7 @@ ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= FI, fill= as.factor(
   theme(axis.title = element_text(size = 16))
 
 # Phosphate boxplot 
-ggplot(core_sites, aes(x=reorder(Site,DOC,na.rm = TRUE), y= Phosphate_P, color= as.factor(Site))) +
+ggplot(core_sites, aes(x=factor(Site, level = c("glacier_hut","lake_inlet","Tundra" , "shrub_creek" ,"Forest" ,"Terminus" ,  "stream_gauge" ,"Nellie_Juan" )), y= Phosphate_P, color= as.factor(Site))) +
   scale_color_manual( values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8", "#6600CC" ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
   #geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.1))+
