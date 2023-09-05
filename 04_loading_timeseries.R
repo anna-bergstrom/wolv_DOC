@@ -128,3 +128,44 @@ Precip_q_ts <- merge(Precip_q_ts,precip2, by = 'datetime',all.x = TRUE)
 readr::write_csv(FDOM21TS, file = file.path("outputs", "04_FDOM21TS.csv"))
 readr::write_csv(FDOM22TS, file = file.path("outputs", "04_FDOM22TS.csv"))
 readr::write_csv(Precip_q_ts, file = file.path("outputs", "04_Precip_q_ts.csv"))
+
+
+
+############### loading EC data ################
+load_EC <- function(input){
+  EC_dat <- read.csv(input, skip = 14, header = T) %>%
+    subset(select = c('Timestamp..UTC.09.00.', 'Value'))%>%
+    rename('datetime' = 'Timestamp..UTC.09.00.', 'Sp_Cond' = 'Value' ) %>%
+  mutate(datetime = as.POSIXct(datetime , tz='America/Anchorage', format = '%Y-%m-%d %H:%M:%S')) %>%
+  mutate(datetime = round_date(datetime, "15 mins"))
+}
+
+EC_gage <- load_EC('Data/Specific_cond_at_25C.uS_cm.research.only@15236900.20190831.csv')
+
+EC_shrub <- load_EC('Data/Specific_cond_at_25C.uS_cm@15236902.20190831.csv')
+
+EC_tundra <- load_EC('Data/Specific_cond_at_25C.uS_cm@15236987.20190831.csv')
+
+EC_nellie <- load_EC('Data/Specific_cond_at_25C.uS_cm@15237000.20190831.csv')
+
+EC_forest <- load_EC('Data/Specific_cond_at_25C.uS_cm@15237003.20190831.csv')
+
+
+start <- EC_gage$datetime[1]
+datetime_target <- data.frame(seq(start, start + years(4), by = "15 min"))
+colnames(datetime_target)<- ('datetime')
+colnames(EC_shrub)<- c('datetime','shrub')
+colnames(EC_forest)<- c('datetime','forest')
+colnames(EC_tundra)<- c('datetime','tundra')
+colnames(EC_nellie)<- c('datetime','nellie')
+colnames(EC_gage)<- c('datetime','gage')
+
+
+EC_fullTS <- merge(datetime_target,EC_forest, by = 'datetime',all.x = TRUE)
+EC_fullTS <- merge(EC_fullTS,EC_shrub, by = 'datetime',all.x = TRUE)
+EC_fullTS <- merge(EC_fullTS,EC_tundra, by = 'datetime',all.x = TRUE)
+EC_fullTS <- merge(EC_fullTS,EC_nellie, by = 'datetime',all.x = TRUE)
+EC_fullTS <- merge(EC_fullTS,EC_gage, by = 'datetime',all.x = TRUE)
+
+readr::write_csv(EC_fullTS, file = file.path("outputs", "04_EC_fullTS.csv"))
+
