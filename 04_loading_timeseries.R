@@ -43,7 +43,7 @@ readr::write_csv(FDOM_fullTS, file = file.path("outputs", "04_FDOM_fullTS.csv"))
 
 ## Loading NWIS data (gage and WX990)
 #setting time bounds to pull data
-bounds <- as.POSIXct(c('01/01/2021 00:00:00','10/01/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+bounds <- as.POSIXct(c('01/01/2021 00:00:00','10/01/2023 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
 
 #pulling Q data form NWIS server
 gauge_data <- readNWISdata(sites = '15236900', service = 'iv', parameterCd = '00060', 
@@ -72,7 +72,7 @@ precip_hourly$datetime <- as.POSIXct(precip_hourly$datetime, tz='America/Anchora
 
 #merging to one data frame
 start <- precip_hourly$datetime[1] #finding the first time step with data (i.e. Jan 1 00:00)
-datetime_target <- data.frame(seq(start, start + days(730), by = "15 min")) #making the 15 min timeseries all other data will be matched to. 
+datetime_target <- data.frame(seq(start, start + months(33), by = "15 min")) #making the 15 min timeseries all other data will be matched to. 
 # changing column names in all data frames so they can be merged more easily
 colnames(datetime_target)<- ('datetime') 
 
