@@ -3,87 +3,43 @@
 
 source("paths+packages.R")
 
-## FDOM 2021 ~~ this may need to change with Zan's updated datasets
-# loading files and getting the right time zone set 
-FDOM21 <- read.csv('Data/2021.combined.corrected.fDOM.csv')
-FDOM21$Forest.datetime <- mdy_hm(FDOM21$Forest.datetime, tz='America/Anchorage')
-FDOM21$Tundra.datetime <- mdy_hm(FDOM21$Tundra.datetime, tz='America/Anchorage')
-FDOM21$Shrub.datetime <- mdy_hm(FDOM21$Shrub.datetime, tz='America/Anchorage')
-FDOM21$Nellie.datetime <- mdy_hm(FDOM21$Nellie.datetime, tz='America/Anchorage')
 
-WlFDOM21 <- read.csv('Data/wolv.2021.WT.cor.fDOM.csv')
-WlFDOM21$datetime <- mdy_hm(WlFDOM21$datetime, tz='America/Anchorage')
+############### loading FDOM data ################
+load_FDOM <- function(input){
+  FDOM_dat <- read.csv(input, skip = 14, header = T) %>%
+    subset(select = c('Timestamp..UTC.09.00.', 'Value'))%>%
+    rename('datetime' = 'Timestamp..UTC.09.00.', 'FDOM' = 'Value' ) %>%
+    mutate(datetime = as.POSIXct(datetime , tz='America/Anchorage', format = '%Y-%m-%d %H:%M:%S')) %>%
+    mutate(datetime = round_date(datetime, "15 mins"))
+}
 
-GlFDOM21 <- read.csv('Data/glacier.2021.wt.cor.fdom.csv')
-GlFDOM21$datetime <- mdy_hm(GlFDOM21$datetime, tz='America/Anchorage')
+FDOM_gage <- load_FDOM('Data/fDOM,_water,_in_situ.fDOM.QSE.corrected.WT.Turb.research.only@15236900.20210101.csv')
 
-# pulling out each location into it's own dataframe so it can more easily be used in the next step 
-glacier <- data.frame((GlFDOM21[,3:4]))
-shrub = data.frame((FDOM21[,1:2]))
-forest = data.frame((FDOM21[,3:4]))
-tundra = data.frame((FDOM21[,5:6]))
-nellie = data.frame((FDOM21[,7:8]))
+FDOM_shrub <- load_FDOM('Data/fDOM,_water,_in_situ.FDOM.QSE.WTcorrected@15236902.20210101.csv')
 
-start <- FDOM21$Shrub.datetime[1] #finding the first time step with data (i.e. Jan 1 00:00)
-datetime_target <- data.frame(seq(start, start + days(365), by = "15 min")) #making the 15 min timeseries all other data will be matched to. 
-# changing column names in all data frames so they can be merged more easily
-colnames(datetime_target)<- ('datetime') 
-colnames(shrub)<- c('datetime','shrub')
-colnames(forest)<- c('datetime','forest')
-colnames(tundra)<- c('datetime','tundra')
-colnames(nellie)<- c('datetime','nellie')
+FDOM_tundra <- load_FDOM('Data/fDOM,_water,_in_situ.FDOM.QSE.WTcorrected@15236987.20210101.csv')
 
-# Merging all data frames from each site so they all align with a common time step and NA anywhere there is no observation due to sonde being down or different logging interval. 
-FDOM21TS <- merge(datetime_target,shrub, by = 'datetime',all.x = TRUE)
-FDOM21TS <- merge(FDOM21TS,forest, by = 'datetime',all.x = TRUE)
-FDOM21TS <- merge(FDOM21TS,tundra, by = 'datetime',all.x = TRUE)
-FDOM21TS <- merge(FDOM21TS,nellie, by = 'datetime',all.x = TRUE)
-FDOM21TS <- merge(FDOM21TS,glacier, by = 'datetime',all.x = TRUE)
-FDOM21TS <- merge(FDOM21TS,WlFDOM21, by = 'datetime',all.x = TRUE)
+FDOM_nellie <- load_FDOM('Data/fDOM,_water,_in_situ.fDOM.QSE.corrected.WT.Turb@15237000.20210101.csv')
 
+FDOM_forest <- load_FDOM('Data/fDOM,_water,_in_situ.FDOM.QSE.WTcorrected@15237003.20210101.csv')
 
-
-## FDOM 2022 ~~ this may need to change with Zan's updated datasets
-# All the same steps as used for 2021 above
-
-# repeating all of the above steps for 2022  
-FDOM22 <- read.csv('Data/2022.combined.corrected.fDOM.csv')
-FDOM22$Forest.datetime <- mdy_hm(FDOM22$Forest.datetime, tz='America/Anchorage')
-FDOM22$Tundra.datetime <- mdy_hm(FDOM22$Tundra.datetime, tz='America/Anchorage')
-FDOM22$Shrub.datetime <- mdy_hm(FDOM22$Shrub.datetime, tz='America/Anchorage')
-FDOM22$Nellie.datetime <- mdy_hm(FDOM22$Nellie.datetime, tz='America/Anchorage')
-
-WlFDOM22 <- read.csv('Data/wolv.2022.WT.cor.fDOM.csv')
-WlFDOM22$datetime <- mdy_hm(WlFDOM22$datetime, tz='America/Anchorage')
-
-forest = data.frame((FDOM22[,1:2]))
-tundra= data.frame((FDOM22[,3:4]))
-shrub = data.frame((FDOM22[,5:6]))
-nellie = data.frame((FDOM22[,7:8]))
-
-start <- FDOM22$Forest.datetime[1]
-datetime_target <- data.frame(seq(start, start + days(365), by = "15 min"))
+start <- FDOM_gage$datetime[1]
+datetime_target <- data.frame(seq(start, start + months(33), by = "15 min"))
 colnames(datetime_target)<- ('datetime')
-colnames(shrub)<- c('datetime','shrub')
-colnames(forest)<- c('datetime','forest')
-colnames(tundra)<- c('datetime','tundra')
-colnames(nellie)<- c('datetime','nellie')
-
-# forest and Nellie data not started on an even time step starting on may 4 (i.e. 1:06, 1:21, 1:36 ...)
-#this is just manually adjusting times to bring it back to closest 15 min step (i.e. 1:00, 1:15, 1:30 ...)
-forest$datetime[forest$datetime > mdy_hms('05/04/2022 12:00:00', tz='America/Anchorage') & forest$datetime < mdy_hms('08/04/2022 11:00:00', tz='America/Anchorage') & !is.na(forest$datetime)] =  
-  forest$datetime[forest$datetime > mdy_hms('05/04/2022 12:00:00', tz='America/Anchorage') & forest$datetime < mdy_hms('08/04/2022 11:00:00', tz='America/Anchorage') & !is.na(forest$datetime)] - minutes(6)
-
-nellie$datetime[ !is.na(nellie$datetime)] =  
-  nellie$datetime[ !is.na(nellie$datetime)] - minutes(9)
-
-FDOM22TS <- merge(datetime_target,forest, by = 'datetime',all.x = TRUE)
-FDOM22TS <- merge(FDOM22TS,shrub, by = 'datetime',all.x = TRUE)
-FDOM22TS <- merge(FDOM22TS,tundra, by = 'datetime',all.x = TRUE)
-FDOM22TS <- merge(FDOM22TS,nellie, by = 'datetime',all.x = TRUE)
-FDOM22TS <- merge(FDOM22TS,WlFDOM22, by = 'datetime',all.x = TRUE)
+colnames(FDOM_shrub)<- c('datetime','shrub')
+colnames(FDOM_forest)<- c('datetime','forest')
+colnames(FDOM_tundra)<- c('datetime','tundra')
+colnames(FDOM_nellie)<- c('datetime','nellie')
+colnames(FDOM_gage)<- c('datetime','gage')
 
 
+FDOM_fullTS <- merge(datetime_target,FDOM_forest, by = 'datetime',all.x = TRUE)
+FDOM_fullTS <- merge(FDOM_fullTS,FDOM_shrub, by = 'datetime',all.x = TRUE)
+FDOM_fullTS <- merge(FDOM_fullTS,FDOM_tundra, by = 'datetime',all.x = TRUE)
+FDOM_fullTS <- merge(FDOM_fullTS,FDOM_nellie, by = 'datetime',all.x = TRUE)
+FDOM_fullTS <- merge(FDOM_fullTS,FDOM_gage, by = 'datetime',all.x = TRUE)
+
+readr::write_csv(FDOM_fullTS, file = file.path("outputs", "04_FDOM_fullTS.csv"))
 
 ## Loading NWIS data (gage and WX990)
 #setting time bounds to pull data
@@ -124,9 +80,7 @@ Precip_q_ts <- merge(datetime_target,gauge_data, by = 'datetime',all.x = TRUE)
 Precip_q_ts <- merge(Precip_q_ts,precip_hourly, by = 'datetime',all.x = TRUE)
 Precip_q_ts <- merge(Precip_q_ts,precip2, by = 'datetime',all.x = TRUE)
 
-## Write three files to outputs to use in analysis scripts 
-readr::write_csv(FDOM21TS, file = file.path("outputs", "04_FDOM21TS.csv"))
-readr::write_csv(FDOM22TS, file = file.path("outputs", "04_FDOM22TS.csv"))
+## Write file to outputs to use in analysis scripts 
 readr::write_csv(Precip_q_ts, file = file.path("outputs", "04_Precip_q_ts.csv"))
 
 
@@ -140,19 +94,19 @@ load_EC <- function(input){
   mutate(datetime = round_date(datetime, "15 mins"))
 }
 
-EC_gage <- load_EC('Data/Specific_cond_at_25C.uS_cm.research.only@15236900.20190831.csv')
+EC_gage <- load_EC('Data/Specific_cond_at_25C.uS_cm.research.only@15236900.20210101.csv')
 
-EC_shrub <- load_EC('Data/Specific_cond_at_25C.uS_cm@15236902.20190831.csv')
+EC_shrub <- load_EC('Data/Specific_cond_at_25C.uS_cm@15236902.20210101.csv')
 
-EC_tundra <- load_EC('Data/Specific_cond_at_25C.uS_cm@15236987.20190831.csv')
+EC_tundra <- load_EC('Data/Specific_cond_at_25C.uS_cm@15236987.20210101.csv')
 
-EC_nellie <- load_EC('Data/Specific_cond_at_25C.uS_cm@15237000.20190831.csv')
+EC_nellie <- load_EC('Data/Specific_cond_at_25C.uS_cm@15237000.20210101.csv')
 
-EC_forest <- load_EC('Data/Specific_cond_at_25C.uS_cm@15237003.20190831.csv')
+EC_forest <- load_EC('Data/Specific_cond_at_25C.uS_cm@15237003.20210101.csv')
 
 
 start <- EC_gage$datetime[1]
-datetime_target <- data.frame(seq(start, start + years(4), by = "15 min"))
+datetime_target <- data.frame(seq(start, start + months(33), by = "15 min"))
 colnames(datetime_target)<- ('datetime')
 colnames(EC_shrub)<- c('datetime','shrub')
 colnames(EC_forest)<- c('datetime','forest')
@@ -169,3 +123,41 @@ EC_fullTS <- merge(EC_fullTS,EC_gage, by = 'datetime',all.x = TRUE)
 
 readr::write_csv(EC_fullTS, file = file.path("outputs", "04_EC_fullTS.csv"))
 
+
+############### loading Stage data ################
+load_St <- function(input){
+  St_dat <- read.csv(input, skip = 14, header = T) %>%
+    subset(select = c('Timestamp..UTC.09.00.', 'Value'))%>%
+    rename('datetime' = 'Timestamp..UTC.09.00.', 'stage' = 'Value' ) %>%
+    mutate(datetime = as.POSIXct(datetime , tz='America/Anchorage', format = '%Y-%m-%d %H:%M:%S')) %>%
+    mutate(datetime = round_date(datetime, "15 mins"))
+}
+
+St_gage <- load_St('Data/Gage_height.ft@15236900.20210101.csv')
+
+St_shrub <- load_St('Data/Gage_height.ft@15236902.20210101.csv')
+
+St_tundra <- load_St('Data/Gage_height.ft@15236987.20210101.csv')
+
+St_nellie <- load_St('Data/Gage_height.ft@15237000.20210101.csv')
+
+St_forest <- load_St('Data/Gage_height.ft@15237003.20210101.csv')
+
+
+start <- St_gage$datetime[1]
+datetime_target <- data.frame(seq(start, start + months(33), by = "15 min"))
+colnames(datetime_target)<- ('datetime')
+colnames(St_shrub)<- c('datetime','shrub')
+colnames(St_forest)<- c('datetime','forest')
+colnames(St_tundra)<- c('datetime','tundra')
+colnames(St_nellie)<- c('datetime','nellie')
+colnames(St_gage)<- c('datetime','gage')
+
+
+Stage_fullTS <- merge(datetime_target,St_forest, by = 'datetime',all.x = TRUE)
+Stage_fullTS <- merge(Stage_fullTS,St_shrub, by = 'datetime',all.x = TRUE)
+Stage_fullTS <- merge(Stage_fullTS,St_tundra, by = 'datetime',all.x = TRUE)
+Stage_fullTS <- merge(Stage_fullTS,St_nellie, by = 'datetime',all.x = TRUE)
+Stage_fullTS <- merge(Stage_fullTS,St_gage, by = 'datetime',all.x = TRUE)
+
+readr::write_csv(Stage_fullTS, file = file.path("outputs", "04_Stage_fullTS.csv"))
