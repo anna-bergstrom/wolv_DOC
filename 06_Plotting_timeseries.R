@@ -31,7 +31,7 @@ range <- function(x){
 (max(x, na.rm = TRUE)-min(x,na.rm = TRUE))   
 }
 
-range_St_TS <- apply(rel_St_TS, 2, function(x) max(x, na.rm = TRUE))
+#range_St_TS <- apply(rel_St_TS, 2, function(x) max(x, na.rm = TRUE))
 
 
 ########## Creating a multi-panel plot of the full two years of data ######################
