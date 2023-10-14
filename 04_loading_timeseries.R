@@ -144,7 +144,7 @@ St_nellie <- load_St('Data/Gage_height.ft@15237000.20210101.csv')
 St_forest <- load_St('Data/Gage_height.ft@15237003.20210101.csv')
 
 
-start <- St_gage$datetime[1]
+start <- St_forest$datetime[1]
 datetime_target <- data.frame(seq(start, start + months(33), by = "15 min"))
 colnames(datetime_target)<- ('datetime')
 colnames(St_shrub)<- c('datetime','shrub')

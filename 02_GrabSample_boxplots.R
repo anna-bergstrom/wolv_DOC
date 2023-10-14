@@ -4,10 +4,13 @@
 
 source("paths+packages.R")
 
+#remove all objects from the workspace
+rm()
+
 #Loading core site data
 core_sites <- read.csv('outputs/01_grabsample_core_sites.csv') 
 
-#!!!!!!!!!!! WE NEED TO DECIDE HOW TO DEAL WITH PRESENTING DATA BELOW ADVERTISED DETECTION LIMITS FOR DOC (0.5ppm), NO3 (0.02 ppm), PO4 (0.03ppm) 
+#DATA BELOW ADVERTISED DETECTION LIMITS FOR DOC (0.5ppm), NO3 (0.02 ppm), PO4 (0.03ppm) now dealt with using censored stats
 core_sites <- mutate(core_sites, doc_detect = if_else(DOC< 0.2, TRUE, FALSE)) %>%
   mutate(NO3_detect = if_else(Nitrate< 0.02, TRUE, FALSE))%>%
   mutate(PO4_detect = if_else(Phosphate_P< 0.03, TRUE, FALSE))
@@ -75,7 +78,7 @@ site1 <- factor(c("Terminus" ,  "stream_gauge" ,"glacier_hut","Nellie_Juan" ,"Tu
 site2 <- factor(c("Terminus" ,  "stream_gauge" ,"glacier_hut","Nellie_Juan" ,"Tundra" , "lake_inlet","shrub_creek" ,"Forest" ))
 data_comp <- expand.grid(site1,site2) %>%
   filter(Var1 != Var2) %>%
-  mutate(DOC_p = NaN, DOC_Sig = NaN, NO3_p = NaN, NO3_Sig = NaN) 
+  mutate(DOC_p = NaN, DOC_Sig = NaN, NO3_p = NaN, NO3_Sig = NaN, FI_p = NaN, FI_Sig = NaN) 
 
 for (i in 1:nrow(data_comp)){
   pairwise <- DOC_table %>%
@@ -93,6 +96,10 @@ for (i in 1:nrow(data_comp)){
   p.val <- 1 - pchisq(temp$chisq, length(temp$n) - 1)
   data_comp$NO3_p[i]<-p.val
   data_comp$NO3_Sig[i]<- p.val<0.05
+  
+  temp <- t.test(core_sites$FI[core_sites$Site == data_comp$Var1[i]], core_sites$FI[core_sites$Site == data_comp$Var2[i]])
+  data_comp$FI_p[i]<-temp$p.value
+  data_comp$FI_Sig[i]<- temp$p.value<0.05
 }
 
 data_comp<- data_comp %>% distinct(DOC_p, .keep_all = TRUE)

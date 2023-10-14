@@ -25,11 +25,20 @@ DOC_FullTS <-  cbind(FDOM_fullTS[1], DOC_FullTS)
 
 
 ############ Calculating a relative stage ###############
-rel_St_TS <- Stage_FullTS[,2:6]
 
-range <- function(x){
-(max(x, na.rm = TRUE)-min(x,na.rm = TRUE))   
+normalized<-function(y) {
+  x<-(y - min(y, na.rm = TRUE)) / (max(y, na.rm = TRUE) - min(y, na.rm = TRUE))
+  return(x)
 }
+
+for_rel <- normalized(Stage_FullTS$forest)
+shrub_rel <- normalized(Stage_FullTS$shrub)
+tundra_rel <- normalized(Stage_FullTS$tundra)
+nellie_rel <- normalized(Stage_FullTS$nellie)
+gage_rel<- normalized(Stage_FullTS$gage)
+RelST_FullTS <-  as.data.frame(cbind(Stage_FullTS[1], for_rel, shrub_rel, tundra_rel, nellie_rel, gage_rel))
+colnames(RelST_FullTS) <- c("datetime","forest", "shrub", "tundra", "nellie", "gage")
+
 
 #range_St_TS <- apply(rel_St_TS, 2, function(x) max(x, na.rm = TRUE))
 
@@ -80,8 +89,8 @@ ts3<- ggplot()+
   xlab('')+
   theme_cust()
 
-bothTS <- plot_grid(ts2, ts1, ts3, ncol=1, align = "v")
-bothTS
+
+
 
 ######### Plotting full Stage time series #########3 
 tundra_sub <- Stage_FullTS[!is.na(Stage_FullTS$tundra), ]
@@ -98,10 +107,11 @@ ts4<- ggplot()+
   ylab("Stage") + 
   xlab('')+
   theme_cust()
-ts4
+
+bothTS <- plot_grid(ts2, ts1, ts3, ts4, ncol=1, align = "v")
 
 Gage_EC_comp <- merge(Precip_Q,EC_FullTS, by = 'datetime',all.x = TRUE)
-ggplot(data = Gage_EC_comp)+
+gagehyst <- ggplot(data = Gage_EC_comp)+
   geom_point(aes(x = log(Q), y= log(gage)), size = 0.5)+
   ylab("EC") + 
   xlab('Q')+
@@ -122,7 +132,7 @@ Rsep21DOC <-DOC_FullTS %>%
 Rsep21EC <- EC_FullTS %>%
   filter(as.POSIXct(datetime) >= bounds_Rsep21[1], as.POSIXct(datetime) <= bounds_Rsep21[2]) 
 
-Rsep21St <- Stage_FullTS %>%
+Rsep21St <- RelST_FullTS %>%
   filter(as.POSIXct(datetime) >= bounds_Rsep21[1], as.POSIXct(datetime) <= bounds_Rsep21[2]) 
 
 Rsep21TS <- merge(Rsep21EC,Rsep21DOC, by = 'datetime',all.x = TRUE)
@@ -137,7 +147,7 @@ DOC1 <- ggplot()+
   geom_line(data = Rsep21DOC, aes(x=as.POSIXct(datetime), y= shrub), color = "#FFAA00", size = 0.5)+
   geom_line(data = Rsep21DOC, aes(x=as.POSIXct(datetime), y= nellie), color = "#EA9DFF", size = 0.5)+
   geom_line(data = Rsep21DOC, aes(x=as.POSIXct(datetime), y= gage), color = "#73DFFF", size = 0.5)+
-  geom_line(data = Rsep21DOC, aes(x=as.POSIXct(datetime), y= glacier), color = "#0084A8", size = 0.5)+
+  
   
   geom_line(data = Rsep21, aes(x=as.POSIXct(datetime), y= Q/100), color = 'black', size = 0.5)+
   geom_tile(data = Rsep21, aes(x=as.POSIXct(datetime), y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'darkslateblue', fill = 'darkslateblue')+ 
@@ -146,7 +156,6 @@ DOC1 <- ggplot()+
   xlab('')+
   theme_cust()
 
-DOC1
   #theme(axis.text = element_text(size = 16))+
  # theme(axis.title = element_text(size = 16))
 
@@ -155,26 +164,40 @@ EC1 <- ggplot(data = Rsep21TS)+
   geom_point(aes(x = shrub.x, y = shrub.y), color = col.shrub, size = 0.5)+
   geom_point(aes(x = tundra.x, y = tundra.y), color = col.tundra, size = 0.5)+
   geom_point(aes(x = nellie.x, y = nellie.y), color = col.nellie, size = 0.5)+
+  geom_point(aes(x = gage.x, y = gage.y), color = col.gage, size = 0.5)+
   ylab(bquote('DOC' (mgl^-1)))+ 
   xlab(expression(paste("EC (" ,  mu,  "S cm"^"-1", ")"))) + 
   xlim(0,60)+
   ylim(0,4)+
   theme_cust()
-EC1
+
 
 St1 <- ggplot(data = Rsep21TS)+ 
   geom_point(aes(x = forest, y = forest.y), color = col.forest, size = 0.5)+
   geom_point(aes(x = shrub, y = shrub.y), color = col.shrub, size = 0.5)+
   geom_point(aes(x = tundra, y = tundra.y), color = col.tundra, size = 0.5)+
   geom_point(aes(x = nellie, y = nellie.y), color = col.nellie, size = 0.5)+
+  geom_point(aes(x = gage, y = gage.y), color = col.gage, size = 0.5)+
   ylab(bquote('DOC' (mgl^-1)))+ 
   xlab("Stage") + 
-  xlim(0,15)+
+  xlim(0,1)+
   ylim(0,4)+
   theme_cust()
-St1
+
+ES1 <- ggplot(data = Rsep21TS)+ 
+  geom_point(aes(x = forest, y = forest.x), color = col.forest, size = 0.5)+
+  geom_point(aes(x = shrub, y = shrub.x), color = col.shrub, size = 0.5)+
+  geom_point(aes(x = tundra, y = tundra.x), color = col.tundra, size = 0.5)+
+  geom_point(aes(x = nellie, y = nellie.x), color = col.nellie, size = 0.5)+
+  geom_point(aes(x = gage, y = gage.x), color = col.gage, size = 0.5)+
+  ylab(expression(paste("EC (" ,  mu,  "S cm"^"-1", ")")))+ 
+  xlab("Stage") + 
+  xlim(0,1)+
+  ylim(0,60)+
+  theme_cust()
+
 ########## Rain August 2022 ##########
-bounds_Rjul22<- as.POSIXct(c('08/16/2022 00:00:00','08/22/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+bounds_Rjul22<- as.POSIXct(c('09/26/2022 00:00:00','09/30/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
 #bounds_Rjul22<- as.POSIXct(c('08/17/2022 00:00:00','08/19/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
 
 
@@ -187,7 +210,7 @@ Rjul22DOC <- DOC_FullTS %>%
 Rjul22EC <- EC_FullTS %>%
   filter(as.POSIXct(datetime) >= bounds_Rjul22[1], as.POSIXct(datetime) <= bounds_Rjul22[2]) 
 
-Rjul22St <- Stage_FullTS %>%
+Rjul22St <- RelST_FullTS %>%
   filter(as.POSIXct(datetime) >= bounds_Rjul22[1], as.POSIXct(datetime) <= bounds_Rjul22[2]) 
 
 Rjul22TS <- merge(Rjul22EC,Rjul22DOC, by = 'datetime',all.x = TRUE)
@@ -210,7 +233,7 @@ DOC2<- ggplot()+
   
   xlab('')+
   theme_cust()
-DOC2
+
   #theme(axis.text = element_text(size = 16))+
   #theme(axis.title = element_text(size = 16))
 
@@ -224,19 +247,32 @@ EC2 <- ggplot(data = Rjul22TS)+
   xlim(0,60)+
   ylim(0,4)+
   theme_cust()
-EC2
+
 
 St2 <- ggplot(data = Rjul22TS)+ 
   geom_point(aes(x = forest, y = forest.y), color = col.forest, size = 0.5)+
   geom_point(aes(x = shrub, y = shrub.y), color = col.shrub, size = 0.5)+
   geom_point(aes(x = tundra, y = tundra.y), color = col.tundra, size = 0.5)+
   geom_point(aes(x = nellie, y = nellie.y), color = col.nellie, size = 0.5)+
+  geom_point(aes(x = gage, y = gage.y), color = col.gage, size = 0.5)+
   ylab(bquote('DOC' (mgl^-1)))+ 
   xlab("Stage") + 
-  xlim(0,15)+
+  xlim(0,1)+
   ylim(0,4)+
   theme_cust()
-St2
+
+ES2 <- ggplot(data = Rjul22TS)+ 
+  geom_point(aes(x = forest, y = forest.x), color = col.forest, size = 0.5)+
+  geom_point(aes(x = shrub, y = shrub.x), color = col.shrub, size = 0.5)+
+  geom_point(aes(x = tundra, y = tundra.x), color = col.tundra, size = 0.5)+
+  geom_point(aes(x = nellie, y = nellie.x), color = col.nellie, size = 0.5)+
+  geom_point(aes(x = gage, y = gage.x), color = col.gage, size = 0.5)+
+  ylab(expression(paste("EC (" ,  mu,  "S cm"^"-1", ")")))+ 
+  xlab("Stage") + 
+  xlim(0,1)+
+  ylim(0,60)+
+  theme_cust()
+
 
 ########## Snow melt 2022 ##########
 bounds_Mmay22<- as.POSIXct(c('05/16/2022 00:00:00','05/29/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
@@ -250,7 +286,7 @@ Mmay22DOC <- DOC_FullTS %>%
 Mmay22EC <- EC_FullTS %>%
   filter(as.POSIXct(datetime) >= bounds_Mmay22[1], as.POSIXct(datetime) <= bounds_Mmay22[2])
 
-Mmay22St <- Stage_FullTS %>%
+Mmay22St <- RelST_FullTS %>%
   filter(as.POSIXct(datetime) >= bounds_Mmay22[1], as.POSIXct(datetime) <= bounds_Mmay22[2]) 
 
 
@@ -293,12 +329,25 @@ St3 <- ggplot(data = Mmay22TS)+
   geom_point(aes(x = shrub, y = shrub.y), color = col.shrub, size = 0.5)+
   geom_point(aes(x = tundra, y = tundra.y), color = col.tundra, size = 0.5)+
   geom_point(aes(x = nellie, y = nellie.y), color = col.nellie, size = 0.5)+
+  geom_point(aes(x = gage, y = gage.y), color = col.gage, size = 0.5)+
   ylab(bquote('DOC' (mgl^-1)))+ 
   xlab("Stage") + 
-  xlim(0,15)+
+  xlim(0,1)+
   ylim(0,4)+
   theme_cust()
-St3
+
+ES3 <- ggplot(data = Mmay22TS)+ 
+  geom_point(aes(x = forest, y = forest.x), color = col.forest, size = 0.5)+
+  geom_point(aes(x = shrub, y = shrub.x), color = col.shrub, size = 0.5)+
+  geom_point(aes(x = tundra, y = tundra.x), color = col.tundra, size = 0.5)+
+  geom_point(aes(x = nellie, y = nellie.x), color = col.nellie, size = 0.5)+
+  geom_point(aes(x = gage, y = gage.x), color = col.gage, size = 0.5)+
+  ylab(expression(paste("EC (" ,  mu,  "S cm"^"-1", ")")))+ 
+  xlab("Stage") + 
+  xlim(0,1)+
+  ylim(0,60)+
+  theme_cust()
+
 
 ########## Dry July 2022 ##########
 bounds_Djul22<- as.POSIXct(c('07/01/2022 00:00:00','07/07/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
@@ -313,7 +362,7 @@ Djul22DOC <- DOC_FullTS %>%
 Djul22EC <- EC_FullTS %>%
   filter(as.POSIXct(datetime) >= bounds_Djul22[1], as.POSIXct(datetime) <= bounds_Djul22[2]) 
 
-Djul22St <- Stage_FullTS %>%
+Djul22St <- RelST_FullTS %>%
   filter(as.POSIXct(datetime) >= bounds_Djul22[1], as.POSIXct(datetime) <= bounds_Djul22[2])
 
 Djul22TS <- merge(Djul22EC,Djul22DOC, by = 'datetime',all.x = TRUE)
@@ -355,21 +404,116 @@ St4 <- ggplot(data = Djul22TS)+
   geom_point(aes(x = shrub, y = shrub.y), color = col.shrub, size = 0.5)+
   geom_point(aes(x = tundra, y = tundra.y), color = col.tundra, size = 0.5)+
   geom_point(aes(x = nellie, y = nellie.y), color = col.nellie, size = 0.5)+
+  geom_point(aes(x = gage, y = gage.y), color = col.gage, size = 0.5)+
   ylab(bquote('DOC' (mgl^-1)))+ 
   xlab("Stage") + 
-  xlim(0,15)+
+  xlim(0,1)+
   ylim(0,4)+
   theme_cust()
-St4
 
-AllDOCts <- plot_grid(DOC3, DOC4, DOC1,DOC2, ncol=2, align = "v")
+ES4 <- ggplot(data = Djul22TS)+ 
+  geom_point(aes(x = forest, y = forest.x), color = col.forest, size = 0.5)+
+  geom_point(aes(x = shrub, y = shrub.x), color = col.shrub, size = 0.5)+
+  geom_point(aes(x = tundra, y = tundra.x), color = col.tundra, size = 0.5)+
+  geom_point(aes(x = nellie, y = nellie.x), color = col.nellie, size = 0.5)+
+  geom_point(aes(x = gage, y = gage.x), color = col.gage, size = 0.5)+
+  ylab(expression(paste("EC (" ,  mu,  "S cm"^"-1", ")")))+ 
+  xlab("Stage") + 
+  xlim(0,1)+
+  ylim(0,60)+
+  theme_cust()
+
+
+########## Winter  ##########
+bounds_Wdec22<- as.POSIXct(c('12/25/2022 00:00:00','12/29/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+#bounds_Rsep21<- as.POSIXct(c('09/10/2021 00:00:00','09/12/2021 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+
+
+Wdec22 <- Precip_Q %>%
+  filter(as.POSIXct(datetime) >= bounds_Wdec22[1], as.POSIXct(datetime) <= bounds_Wdec22[2]) 
+
+Wdec22DOC <-DOC_FullTS %>%
+  filter(as.POSIXct(datetime) >= bounds_Wdec22[1], as.POSIXct(datetime) <= bounds_Wdec22[2]) 
+
+Wdec22EC <- EC_FullTS %>%
+  filter(as.POSIXct(datetime) >= bounds_Wdec22[1], as.POSIXct(datetime) <= bounds_Wdec22[2]) 
+
+Wdec22St <- RelST_FullTS %>%
+  filter(as.POSIXct(datetime) >= bounds_Wdec22[1], as.POSIXct(datetime) <= bounds_Wdec22[2]) 
+
+Wdec22TS <- merge(Rsep21EC,Rsep21DOC, by = 'datetime',all.x = TRUE)
+Wdec22TS <- merge(Rsep21TS,Rsep21St, by = 'datetime',all.x = TRUE)
+
+maxRange <- 10 # set how wide of the first axis (streamflow)
+coeff <-1 # set the shrink coeffcient of Precipitation
+
+DOC5 <- ggplot()+
+  geom_line(data = Wdec22DOC, aes(x=as.POSIXct(datetime), y= forest), color = "#E2725B", size = 0.5)+
+  geom_line(data = Wdec22DOC, aes(x=as.POSIXct(datetime), y= tundra), color = "#A80084", size = 0.5 )+
+  geom_line(data = Wdec22DOC, aes(x=as.POSIXct(datetime), y= shrub), color = "#FFAA00", size = 0.5)+
+  geom_line(data = Wdec22DOC, aes(x=as.POSIXct(datetime), y= nellie), color = "#EA9DFF", size = 0.5)+
+  geom_line(data = Wdec22DOC, aes(x=as.POSIXct(datetime), y= gage), color = "#73DFFF", size = 0.5)+
+  
+  
+  geom_line(data = Wdec22, aes(x=as.POSIXct(datetime), y= Q/100), color = 'black', size = 0.5)+
+  geom_tile(data = Wdec22, aes(x=as.POSIXct(datetime), y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'darkslateblue', fill = 'darkslateblue')+ 
+  scale_y_continuous(name = 'DOC (mg l-1)',limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
+  xlim(bounds_Wdec22)+
+  xlab('')+
+  theme_cust()
+
+#theme(axis.text = element_text(size = 16))+
+# theme(axis.title = element_text(size = 16))
+
+EC5 <- ggplot(data = Wdec22TS)+ 
+  geom_point(aes(x = forest.x, y = forest.y), color = col.forest, size = 0.5)+
+  geom_point(aes(x = shrub.x, y = shrub.y), color = col.shrub, size = 0.5)+
+  geom_point(aes(x = tundra.x, y = tundra.y), color = col.tundra, size = 0.5)+
+  geom_point(aes(x = nellie.x, y = nellie.y), color = col.nellie, size = 0.5)+
+  geom_point(aes(x = gage.x, y = gage.y), color = col.gage, size = 0.5)+
+  ylab(bquote('DOC' (mgl^-1)))+ 
+  xlab(expression(paste("EC (" ,  mu,  "S cm"^"-1", ")"))) + 
+  xlim(0,60)+
+  ylim(0,4)+
+  theme_cust()
+
+
+St5 <- ggplot(data = Wdec22TS)+ 
+  geom_point(aes(x = forest, y = forest.y), color = col.forest, size = 0.5)+
+  geom_point(aes(x = shrub, y = shrub.y), color = col.shrub, size = 0.5)+
+  geom_point(aes(x = tundra, y = tundra.y), color = col.tundra, size = 0.5)+
+  geom_point(aes(x = nellie, y = nellie.y), color = col.nellie, size = 0.5)+
+  geom_point(aes(x = gage, y = gage.y), color = col.gage, size = 0.5)+
+  ylab(bquote('DOC' (mgl^-1)))+ 
+  xlab("Stage") + 
+  xlim(0,1)+
+  ylim(0,4)+
+  theme_cust()
+
+ES5 <- ggplot(data = Wdec22TS)+ 
+  geom_point(aes(x = forest, y = forest.x), color = col.forest, size = 0.5)+
+  geom_point(aes(x = shrub, y = shrub.x), color = col.shrub, size = 0.5)+
+  geom_point(aes(x = tundra, y = tundra.x), color = col.tundra, size = 0.5)+
+  geom_point(aes(x = nellie, y = nellie.x), color = col.nellie, size = 0.5)+
+  geom_point(aes(x = gage, y = gage.x), color = col.gage, size = 0.5)+
+  ylab(expression(paste("EC (" ,  mu,  "S cm"^"-1", ")")))+ 
+  xlab("Stage") + 
+  xlim(0,1)+
+  ylim(0,60)+
+  theme_cust()
+
+
+AllDOCts <- plot_grid(DOC3, DOC4, DOC1,DOC2,DOC5, ncol=2, align = "v")
 AllDOCts
 
-Allhyst <- plot_grid(EC3, EC4, EC1,EC2, ncol=2, align = "v")
+Allhyst <- plot_grid(EC3, EC4, EC1,EC2,EC5, ncol=2, align = "v")
 Allhyst
 
-All_stage <- plot_grid(St3, St4, St1,St2, ncol=2, align = "v")
+All_stage <- plot_grid(St3, St4, St1,St2,St5, ncol=2, align = "v")
 All_stage
+
+All_ECstage <- plot_grid(ES3, ES4, ES1, ES2, ES5, ncol=2, align = "v")
+All_ECstage
 ### Fun with plotting timeseries ############
 
 bounds_Djul22<- as.POSIXct(c('06/01/2022 00:00:00','07/31/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
