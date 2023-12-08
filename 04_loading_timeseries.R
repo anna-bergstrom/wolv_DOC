@@ -1,6 +1,6 @@
 ##04_loading_timeseries
 # This will load the sonde timeseries, combine, organize, and get all sites and data streams on the same timestep and comparable. 
-
+rm(list= ls())
 source("paths+packages.R")
 
 

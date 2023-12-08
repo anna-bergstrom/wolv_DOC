@@ -2,7 +2,7 @@
 # This brings in the FDOM, Precip, and Q timeseries for plotting
 # Convert FDOM to DOC using the Kendall's robust line analysis
 # Plot all the data as a time series and pulls out events as examples
-
+rm(list= ls())
 source("paths+packages.R")
 
 # load necessary data
@@ -23,6 +23,7 @@ Precip_Q$datetime <- strptime(Precip_Q$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC'
 DOC_FullTS <- fit_model$slope*FDOM_fullTS[2:6]+fit_model$intercept
 DOC_FullTS <-  cbind(FDOM_fullTS[1], DOC_FullTS)
 
+readr::write_csv(DOC_FullTS, file = file.path("outputs", "06_DOC_FullTS.csv"))
 
 ############ Calculating a relative stage ###############
 

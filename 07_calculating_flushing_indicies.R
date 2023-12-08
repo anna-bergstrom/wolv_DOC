@@ -21,7 +21,7 @@ ShrubST <- Precip_Q %>%
 #ShrubST$datetime <- as.double(strptime(ShrubST$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC'))/86400 
 ShrubST$datetime <-strptime(ShrubST$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 
-shrub_base <- HydRun::separate.baseflow(ShrubST, 0.95,15 )
+shrub_base <- HydRun::separate.baseflow(ShrubST, 0.97,20)
 
 bounds_21<- as.POSIXct(c('05/01/2021 00:00:00','11/02/2021 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "UTC")
 
@@ -36,3 +36,4 @@ ggplot()+
   geom_point( aes(x= as.POSIXct(flow21$datetime), y = flow21$Q_m3s),size = 0.5, color = col.tundra )+
   geom_point( aes(x= Stormflow21$datetime, y = Stormflow21$stormflow),size = 0.5, color = col.gage )+
   geom_point(aes(x = baseflow21$datetime, y = baseflow21$baseflow) ,size = 0.5)
+
