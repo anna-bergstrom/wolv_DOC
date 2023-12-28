@@ -1,6 +1,8 @@
 ## 01_GrabSample_processing
 # This will load the grab sample datasets, combine, organize,  and subset the core sites
 
+rm(list= ls())
+
 source("paths+packages.R")
 
 #reading in 2019 to present data
