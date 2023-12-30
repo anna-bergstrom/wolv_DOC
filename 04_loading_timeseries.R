@@ -104,8 +104,10 @@ EC_nellie <- load_EC('Data/Specific_cond_at_25C.uS_cm@15237000.20210101.csv')
 
 EC_forest <- load_EC('Data/Specific_cond_at_25C.uS_cm@15237003.20210101.csv')
 
+EC_gage <- EC_gage[!duplicated(EC_gage),] 
 
 start <- EC_gage$datetime[1]
+
 datetime_target <- data.frame(seq(start, start + months(33), by = "15 min"))
 colnames(datetime_target)<- ('datetime')
 colnames(EC_shrub)<- c('datetime','shrub')
@@ -120,6 +122,7 @@ EC_fullTS <- merge(EC_fullTS,EC_shrub, by = 'datetime',all.x = TRUE)
 EC_fullTS <- merge(EC_fullTS,EC_tundra, by = 'datetime',all.x = TRUE)
 EC_fullTS <- merge(EC_fullTS,EC_nellie, by = 'datetime',all.x = TRUE)
 EC_fullTS <- merge(EC_fullTS,EC_gage, by = 'datetime',all.x = TRUE)
+
 
 readr::write_csv(EC_fullTS, file = file.path("outputs", "04_EC_fullTS.csv"))
 
