@@ -18,7 +18,7 @@ EC_FullTS$datetime <-strptime(EC_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC
 Precip_Q <- read.csv('outputs/04_Precip_q_ts.csv') 
 Precip_Q$datetime <-strptime(Precip_Q$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 
-###Testing Hydrun with Gage
+###### Testing Hydrun with Gage #######
 #organizing and formatting data
 
 bounds_21<- as.POSIXct(c('05/11/2021 00:00:00','10/27/2021 06:30:00'), format="%m/%d/%Y %H:%M:%S", TZ = "UTC")
@@ -32,7 +32,6 @@ Gage21 <- Precip_Q %>%
 gage_base <- HydRun::separate.baseflow(Gage21, 0.9,20)
 
 #Sub-setting to plot
-
 Stormflow21 <- gage_base$stormflow  
 baseflow21 <- gage_base$baseflow 
 
@@ -48,7 +47,7 @@ ggplot()+
 Stormflow21_filled = na_interpolation(Stormflow21, option = 'linear', maxgap = Inf) #function to fill NA
 runoff_events <- HydRun::extract.runoff(Stormflow21_filled, 0.1, 0.001, 0.001, 0.35, 1, 4, 0.001) 
 
-#Pulling DOC data for each identified event
+#Pulling DOC and EC data for each identified event
 combined_events <- list()
 for (i in 1:length(runoff_events$RunoffEvents)){
 temp <- runoff_events$RunoffEvents[[i]]
@@ -71,3 +70,7 @@ ggplot(events_long)+
   geom_point( aes(x= as.POSIXct(datetime), y = DOC*10),size = 0.5, color = col.gage )+
   geom_point( aes(x= as.POSIXct(datetime), y = EC/10), size = 0.5, color = col.forest )+
   facet_wrap(vars(as.numeric(number)), scales = "free")
+
+## operationalizing as a series of functions to use for stage data at each site 
+
+
