@@ -1,36 +1,41 @@
 ﻿Site,cover,value,DOC
-Forest,Tundra,0,7
-Shrub,Tundra,78,6
+Forest,Tundra,7,8
+Shrub,Tundra,78,7
 Nellie Juan,Tundra,21,4
 Gage,Tundra,24,2
 Terminus,Tundra,19,1
-Tundra,Tundra,71,5
+Tundra,Tundra,71,6
 Glacier,Tundra,20,3
-Forest,Ice,0,7
-Shrub,Ice,1,6
+Upper Tundra,Tundra,100,5
+Forest,Ice,0,8
+Shrub,Ice,1,7
 Nellie Juan,Ice,31,4
 Gage,Ice,58,2
 Terminus,Ice,66,1
-Tundra,Ice,0,5
+Tundra,Ice,0,6
 Glacier,Ice,54,3
-Forest,Shrub,0,7
-Shrub,Shrub,16,6
+Upper Tundra,Ice,0,5
+Forest,Shrub,5,8
+Shrub,Shrub,16,7
 Nellie Juan,Shrub,8,4
 Gage,Shrub,2,2
 Terminus,Shrub,0,1
-Tundra,Shrub,1,5
+Tundra,Shrub,1,6
 Glacier,Shrub,0,3
-Forest,Rock,0,7
-Shrub,Rock,3,6
+Upper Tundra,Shrub,0,5
+Forest,Rock,9,8
+Shrub,Rock,3,7
 Nellie Juan,Rock,23,4
 Gage,Rock,15,2
 Terminus,Rock,15,1
-Tundra,Rock,27,5
+Tundra,Rock,27,6
 Glacier,Rock,27,3
-Forest,Forest,100,7
-Shrub,Forest,2,6
+Upper Tundra,Rock,0,5
+Forest,Forest,79,8
+Shrub,Forest,2,7
 Nellie Juan,Forest,18,4
 Gage,Forest,1,2
 Terminus,Forest,0,1
-Tundra,Forest,1,5
+Tundra,Forest,1,6
 Glacier,Forest,0,3
+Upper Tundra,Forest,0,5

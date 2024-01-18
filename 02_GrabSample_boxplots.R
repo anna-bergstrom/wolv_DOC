@@ -1,8 +1,9 @@
 ## 02_GrabSample_boxplots
 
 # This code plots the boxplots of grab sample parameters at the core sampling sites, figures will be used in paper
-
+setwd("/Users/annabergstrom/BSU_drive/Projects/AK_post-doc/DOC/wolv_DOC")
 source("paths+packages.R")
+
 
 #remove all objects from the workspace
 rm()
@@ -27,7 +28,7 @@ max_threshold <- DOC_table %>%
   filter(doc_detect == TRUE) %>%
   summarise(max = max(DOC))
 
-DOC_plot = ggplot(cendf_DOC, aes(x= factor(group, level = c("glacier_hut","lake_inlet","Tundra" , "shrub_creek" ,"Forest" ,"Terminus" ,  "stream_gauge" ,"Nellie_Juan" )), y=ros.model, fill= as.factor(group))) +
+DOC_plot = ggplot(cendf_DOC, aes(x= factor(group, level = c("Terminus" ,  "stream_gauge","glacier_hut", "Nellie_Juan","lake_inlet","Tundra" , "shrub_creek" ,"Forest"  )), y=ros.model, fill= as.factor(group))) +
   geom_boxplot(coef=1.5, outlier.shape = 19) +
   scale_fill_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage, col.term, col.glacier, col.lake_in ), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra" , "stream_gauge" ,"Terminus" , "glacier_hut", "lake_inlet"))+
   geom_hline(yintercept = max_threshold[[1]], linetype="dashed", color = "#1A237E", size=1) +
@@ -38,8 +39,8 @@ DOC_plot = ggplot(cendf_DOC, aes(x= factor(group, level = c("glacier_hut","lake_
   theme(axis.text.x=element_text(angle = -45, hjust = 0))+
   theme(legend.position = "none")+ 
   theme(aspect.ratio = 1/1)+
-  theme(axis.text = element_text(size = 16))+
-  theme(axis.title = element_text(size = 16))  
+  theme(axis.text = element_text(size = 14))+
+  theme(axis.title = element_text(size = 14))  
 
 print(DOC_plot)
 
