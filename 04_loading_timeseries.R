@@ -52,12 +52,15 @@ gauge_data <- readNWISdata(sites = '15236900', service = 'iv', parameterCd = '00
   mutate(datetime = with_tz(datetime, tz = 'America/Anchorage'),Q_m3s = Q*0.028316847)
 
 #pulling met data from NWIS server 
-met_data <- readNWISdata(sites = '15236895', service = 'iv', parameterCd = '72194', 
+met_data <- readNWISdata(sites = '15236895', service = 'iv', parameterCd = c('72194','00020'), 
                          startDate = as.Date(bounds[1]), endDate = as.Date(bounds[2]))  %>%
-  select(datetime = dateTime, Precip1 = X_..2.._72194_00000, Precip2 = X_72194_00000) %>%
+  select(datetime = dateTime, Precip1 = X_..2.._72194_00000, Precip2 = X_72194_00000, AirT = X_PROBE1_00020_00000) %>%
   mutate(datetime = with_tz(datetime, tz = 'America/Anchorage'))
 # met data from server is the raw cumulative time series which includes draining of the TPG
 # the following few lines clumsily deal with that
+
+airT <- met_data %>%
+select(datetime, AirT)
 
 precip2 <- diff(met_data$Precip2) #taking the difference from one time step to the next to get 15 min instantaneous data 
 precip2 <- data.frame(met_data$datetime[2:length(met_data$datetime)],precip2) #pulling the time stamp along with the 15 min instantaneous data
@@ -79,6 +82,7 @@ colnames(datetime_target)<- ('datetime')
 Precip_q_ts <- merge(datetime_target,gauge_data, by = 'datetime',all.x = TRUE)
 Precip_q_ts <- merge(Precip_q_ts,precip_hourly, by = 'datetime',all.x = TRUE)
 Precip_q_ts <- merge(Precip_q_ts,precip2, by = 'datetime',all.x = TRUE)
+Precip_q_ts <- merge(Precip_q_ts,airT, by = 'datetime',all.x = TRUE)
 
 ## Write file to outputs to use in analysis scripts 
 readr::write_csv(Precip_q_ts, file = file.path("outputs", "04_Precip_q_ts.csv"))
