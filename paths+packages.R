@@ -14,6 +14,7 @@ library(factoextra)
 library(dataRetrieval)
 library(cowplot)
 library(NADA)
+library(reshape2)
 
 # Setting up paths for data and scripts
 
