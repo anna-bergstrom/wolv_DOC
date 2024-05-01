@@ -1,0 +1,131 @@
+##06.2_Plotting_winter_subsets
+# This brings in the DOC, Precip, EC, and Relative Stage timeseries for plotting
+# Pulls out winter of 2021-22 and 2022-23 and makes plots
+rm(list= ls())
+source("paths+packages.R")
+
+# load necessary data
+RelST_FullTS <- read.csv('outputs/06_relative_stageTS.csv')
+DOC_FullTS <- read.csv('outputs/06_DOC_FullTS.csv')
+EC_FullTS <- read.csv('outputs/04_EC_FullTS.csv')
+Precip_Q <- read.csv('outputs/04_Precip_q_ts.csv') 
+
+Seward_met <- read.csv('outputs/04_Seward_met.csv')
+Seward_met$dateTime <- strptime(Seward_met$dateTime, "%Y-%m-%d %H:%M:%S", tz = 'UTC')
+Seward_met <- Seward_met %>% 
+  mutate(Sew_AirT_C = (AirT_F-32)*(5/9)) %>%
+  select(datetime = dateTime, Sew_AirT_C = Sew_AirT_C) %>%
+  mutate(sm.sewT = rollapply(Sew_AirT_C, 32,mean, na.rm = TRUE, fill = NA))
+
+
+# Convert ISO datestrings to datetime type 
+# All times were converted to UTC in previous processing scripts - we'll just work in UTC for consistency here
+RelST_FullTS$datetime <- strptime(RelST_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+DOC_FullTS$datetime <- strptime(DOC_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+EC_FullTS$datetime <- strptime(EC_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+Precip_Q$datetime <- strptime(Precip_Q$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+
+Precip_Q <- Precip_Q %>%
+  mutate(sm.990T = rollapply(AirT, 32,mean, na.rm = TRUE, fill = NA) )
+
+########## Winter 2021-22 ##########
+bounds_W2121<- as.POSIXct(c('11/01/2021 00:00:00','06/01/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+
+Win21_22 <- Precip_Q %>%
+  filter(as.POSIXct(datetime) >= bounds_W2121[1], as.POSIXct(datetime) <= bounds_W2121[2]) 
+
+Win21_22DOC <- DOC_FullTS %>%
+  filter(as.POSIXct(datetime) >= bounds_W2121[1], as.POSIXct(datetime) <= bounds_W2121[2]) 
+
+
+Win21_22Sew <- Seward_met %>%
+  filter(as.POSIXct(datetime) >= bounds_W2121[1], as.POSIXct(datetime) <= bounds_W2121[2]) 
+
+maxRange <- 1.1*max(Win21_22$precip_mm, na.rm = TRUE) # set how wide the precip plot will be
+maxRange <- 10
+coeff <- 2 # set the shrink coeffcient of Precipitation
+
+DOC21 <- ggplot()+
+  geom_line(data = Win21_22DOC, aes(x=as.POSIXct(datetime), y= forest), color = "#E2725B", size = 0.5)+
+  geom_line(data = Win21_22DOC, aes(x=as.POSIXct(datetime), y= tundra), color = "#A80084", size = 0.5 )+
+  geom_line(data = Win21_22DOC, aes(x=as.POSIXct(datetime), y= shrub), color = "#FFAA00", size = 0.5)+
+  geom_line(data = Win21_22DOC, aes(x=as.POSIXct(datetime), y= nellie), color = "#EA9DFF", size = 0.5)+
+  geom_line(data = Win21_22DOC, aes(x=as.POSIXct(datetime), y= gage), color = "#73DFFF", size = 0.5)+
+  xlim(bounds_W2121)+
+  xlab('')+
+  ylab(bquote('DOC' (mgl^-1)))+
+  theme_cust()
+  
+AirT21 <- ggplot()+ 
+  geom_line(data = Win21_22Sew, aes(x=as.POSIXct(datetime), y= sm.sewT), color = '#023d1d', size = 0.5)+
+  geom_line(data = Win21_22, aes(x=as.POSIXct(datetime), y= sm.990T), color = '#9bfac6', size = 0.5)+
+  geom_hline(yintercept = 0, linetype="dashed", color = "#1A237E", size=0.5) +
+  xlim(bounds_W2121)+
+  xlab('')+
+  ylab(bquote('Air Temperature (\u00B0C)'))+
+  theme_cust()  
+
+Precip21 <- ggplot()+     
+  geom_tile(data = Win21_22, aes(x=as.POSIXct(datetime), y = maxRange - precip_mm/2, height = precip_mm),  color = 'darkslateblue', fill = 'darkslateblue')+ 
+  #scale_y_reverse()+
+  xlim(bounds_W2121)+
+  ylab(bquote('Precipiation ' (mmhr^-1)))+
+  xlab('')+
+  ylim(0,maxRange)+
+  theme_cust()
+
+win21_full_plot <- plot_grid(Precip21, AirT21, DOC21,  ncol=1, align = "v")
+print(win21_full_plot)
+
+########## Winter 2022-23 ##########
+bounds_W2223<- as.POSIXct(c('11/01/2022 00:00:00','06/01/2023 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+
+Win22_23 <- Precip_Q %>%
+  filter(as.POSIXct(datetime) >= bounds_W2223[1], as.POSIXct(datetime) <= bounds_W2223[2]) 
+
+Win22_23DOC <- DOC_FullTS %>%
+  filter(as.POSIXct(datetime) >= bounds_W2223[1], as.POSIXct(datetime) <= bounds_W2223[2]) 
+
+Win22_23Sew <- Seward_met %>%
+  filter(as.POSIXct(datetime) >= bounds_W2223[1], as.POSIXct(datetime) <= bounds_W2223[2]) 
+
+maxRange <- 10 # set how wide of the first axis (streamflow)
+coeff <- 2 # set the shrink coeffcient of Precipitation
+
+#maxRange <- 1.1*max(Win22_23$precip_mm, na.rm = TRUE) # set how wide the precip plot will be
+maxRange <- 10
+coeff <- 2 # set the shrink coeffcient of Precipitation
+
+DOC22 <- ggplot()+
+  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= forest), color = "#E2725B", size = 0.5)+
+  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= tundra), color = "#A80084", size = 0.5 )+
+  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= shrub), color = "#FFAA00", size = 0.5)+
+  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= nellie), color = "#EA9DFF", size = 0.5)+
+  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= gage), color = "#73DFFF", size = 0.5)+
+  xlim(bounds_W2223)+
+  #scale_x_date(breaks = as.Date(c("2022-11-01", "2022-12-01", "2023-01-01", "2023-02-01","2023-03-01",  "2023-04-01", "2023-05-01" )))+
+  xlab('')+
+  ylab(bquote('DOC' (mgl^-1)))+
+  theme_cust()
+
+AirT22 <- ggplot()+ 
+  geom_line(data = Win22_23Sew, aes(x=as.POSIXct(datetime), y= sm.sewT), color = '#023d1d', size = 0.5)+
+  geom_line(data = Win22_23, aes(x=as.POSIXct(datetime), y= sm.990T), color = '#9bfac6', size = 0.5)+
+  geom_hline(yintercept = 0, linetype="dashed", color = "#1A237E", size=0.5) +
+  xlim(bounds_W2223)+
+  xlab('')+
+  ylab(bquote('Air Temperature (\u00B0C)'))+
+  theme_cust()  
+
+Precip22 <- ggplot()+     
+  geom_tile(data = Win22_23, aes(x=as.POSIXct(datetime), y = maxRange - precip_mm/2, height = precip_mm),  color = 'darkslateblue', fill = 'darkslateblue')+ 
+  #scale_y_reverse()+
+  xlim(bounds_W2223)+
+  ylab(bquote('Precipiation ' (mmhr^-1)))+
+  xlab('')+
+  ylim(0,maxRange)+
+  theme_cust()
+
+win22_full_plot <- plot_grid(Precip22, AirT22, DOC22,  ncol=1, align = "v")
+print(win22_full_plot)
+

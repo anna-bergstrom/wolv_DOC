@@ -15,6 +15,7 @@ library(dataRetrieval)
 library(cowplot)
 library(NADA)
 library(reshape2)
+library(riem) 
 
 # Setting up paths for data and scripts
 
