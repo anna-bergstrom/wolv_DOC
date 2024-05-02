@@ -92,7 +92,7 @@ FI_EC_wagg <- FI_weekly_agg(EC_FullTS)
 FI_DOC_wagg <- FI_weekly_agg(DOC_FullTS)
 FI_ST_wagg <- FI_weekly_agg(RelST_FullTS)
 
-  ggplot(data = FI_ST_wagg)+
+  ggplot(data = FI_EC_week)+
     geom_point( aes(x=week, y= forest), color = col.forest, size = 3)+
     geom_smooth(aes(x=week, y= forest), color = col.forest, size = 1, se= FALSE)+
     geom_point( aes(x=week, y= shrub), color = col.shrub, size = 3)+

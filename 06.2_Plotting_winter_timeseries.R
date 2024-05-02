@@ -66,7 +66,7 @@ AirT21 <- ggplot()+
   theme_cust()  
 
 Precip21 <- ggplot()+     
-  geom_tile(data = Win21_22, aes(x=as.POSIXct(datetime), y = maxRange - precip_mm/2, height = precip_mm),  color = 'darkslateblue', fill = 'darkslateblue')+ 
+  geom_tile(data = Win21_22, aes(x=as.POSIXct(datetime), y = maxRange - precip_mm/2, height = precip_mm),  color = '#42ecf5', fill = '#42ecf5')+ 
   #scale_y_reverse()+
   xlim(bounds_W2121)+
   ylab(bquote('Precipiation ' (mmhr^-1)))+
@@ -97,11 +97,11 @@ maxRange <- 10
 coeff <- 2 # set the shrink coeffcient of Precipitation
 
 DOC22 <- ggplot()+
-  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= forest), color = "#E2725B", size = 0.5)+
-  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= tundra), color = "#A80084", size = 0.5 )+
-  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= shrub), color = "#FFAA00", size = 0.5)+
-  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= nellie), color = "#EA9DFF", size = 0.5)+
-  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= gage), color = "#73DFFF", size = 0.5)+
+  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= forest), color = col.forest, size = 0.5)+
+  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= tundra), color = col.tundra, size = 0.5 )+
+  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= shrub), color = col.shrub, size = 0.5)+
+  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= nellie), color = col.nellie, size = 0.5)+
+  geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= gage), color = col.gage, size = 0.5)+
   xlim(bounds_W2223)+
   #scale_x_date(breaks = as.Date(c("2022-11-01", "2022-12-01", "2023-01-01", "2023-02-01","2023-03-01",  "2023-04-01", "2023-05-01" )))+
   xlab('')+
@@ -118,7 +118,7 @@ AirT22 <- ggplot()+
   theme_cust()  
 
 Precip22 <- ggplot()+     
-  geom_tile(data = Win22_23, aes(x=as.POSIXct(datetime), y = maxRange - precip_mm/2, height = precip_mm),  color = 'darkslateblue', fill = 'darkslateblue')+ 
+  geom_tile(data = Win22_23, aes(x=as.POSIXct(datetime), y = maxRange - precip_mm/2, height = precip_mm),  color = '#42ecf5', fill = '#42ecf5')+ 
   #scale_y_reverse()+
   xlim(bounds_W2223)+
   ylab(bquote('Precipiation ' (mmhr^-1)))+

@@ -5,7 +5,7 @@ source("paths+packages.R")
 
 #reading in 2022 Incubation results
 incub22 <- read.csv('Data/incubation_results22.csv') 
-incub17 <- read.csv("Data/INcubation2017_DOC_data.csv")
+incub17 <- read.csv("Data/Incubation2017_DOC_data.csv")
 NOSAMS <- read.csv('Data/NOSAMS_results.csv') 
 
 # pulling the names for each site 
@@ -13,7 +13,7 @@ incub_names22 <- unique(incub22$Site)
 incub_names17 <- unique(incub17$location) 
 
 
-# calculating the mean and standatd deviation of triplicates for each site and timepoint
+# calculating the mean and standard deviation of triplicates for each site and timepoint
 incub_summary22 <- incub22 %>%
   group_by(Site,Time.Point) %>%
   summarise(meanconc = mean(DOC_mgL),stdconc = sd(DOC_mgL),mean_FI = mean(FI),mean_HIX = mean(HIX), mean_FDOM = mean(FDOM)) 
@@ -45,6 +45,7 @@ ggplot()+
   scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.term, col.glacier, col.lake_in, col.glacier, col.term, col.nellie), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra"  ,"Terminus" , "Glacier", "lake inlet", 'glacial', 'terminus', 'nellie_juan'))+
   theme_cust()+
   xlim(0,7)+
+  scale_y_log10()+
   ylab("DOC (ppm)")+
   xlab("Days since incubation start") 
 #ggsave(file ="Incub_TS_conc.pdf",width=6, height=5, units = "in" )
@@ -57,7 +58,7 @@ ggplot()+
   geom_point(data = incub_summary17, aes( x = time, y = roll_pct_change, group = location, color = location), shape = 15, size = 3)+
   scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.term, col.glacier, col.lake_in, col.glacier, col.term, col.nellie), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra"  ,"Terminus" , "Glacier", "lake inlet", 'glacial', 'terminus', 'nellie_juan'))+
   theme_cust()+
-  xlim(0,7)+
+  xlim(0,30)+
   #ylim(0,50)+
   ylab("DOC percent lost")+
   xlab("Days since incubation start") 
@@ -65,44 +66,78 @@ ggplot()+
 
 # Creating a dataframe/table with initial DOC concentration and the % lost after 6 days of incubation. 
 DOC_lost22 <- rep(NA,length(incub_names22))
+DOC_lost221D <- rep(NA,length(incub_names22))
 DOC_init22 <- rep(NA,length(incub_names22))
+DOC_meanFI <- rep(NA,length(incub_names22))
 
 DOC_lost17 <- rep(NA,length(incub_names17))
+DOC_lost171D <- rep(NA,length(incub_names17))
 DOC_init17 <- rep(NA,length(incub_names17))
 
+k = 1
 for (k in 1:length(incub_names22)) {
   temp <- incub_summary22 %>%
-    filter(Site == incub_names22[k] & (Time.Point == 0 |Time.Point == 6)) 
+    filter(Site == incub_names22[k] & (Time.Point == 0 |Time.Point == 6 |Time.Point==1)) 
   
-  DOC_lost22[k] <- ((temp$meanconc[1] - temp$meanconc[2])/temp$meanconc[1])*100 
+  DOC_lost22[k] <- ((temp$meanconc[1] - temp$meanconc[3])/temp$meanconc[1])*100 
+  DOC_lost221D[k] <- ((temp$meanconc[1] - temp$meanconc[2])/temp$meanconc[1])*100 
   DOC_init22[k]<- temp$meanconc[1]
+  DOC_meanFI[k] <-temp$mean_FI[1]
 }
 
-DOC_lost22 <- data.frame(DOC_lost22,incub_names22,DOC_init22) %>%
+DOC_lost22 <- data.frame(DOC_lost22,DOC_lost221D,incub_names22,DOC_init22,DOC_meanFI) %>%
   rename(Site = incub_names22)
 
 for (k in 1:length(incub_names17)) {
   temp <- incub_summary17 %>%
-    filter(location == incub_names17[k] & (time == 0 |time == 6)) 
+    filter(location == incub_names17[k] & (time == 0 |time == 6|time==1)) 
   
-  DOC_lost17[k] <- ((temp$meanconc[1] - temp$meanconc[2])/temp$meanconc[1])*100 
+  DOC_lost17[k] <- ((temp$meanconc[1] - temp$meanconc[3])/temp$meanconc[1])*100 
+  DOC_lost171D[k] <- ((temp$meanconc[1] - temp$meanconc[2])/temp$meanconc[1])*100 
   DOC_init17[k]<- temp$meanconc[1]
 }
 
-DOC_lost17 <- data.frame(DOC_lost17,incub_names17,DOC_init17) %>%
+DOC_lost17 <- data.frame(DOC_lost17,DOC_lost171D, incub_names17,DOC_init17) %>%
   rename(Site = incub_names17)
 
+DOC_lost22[DOC_lost22$Site =="Tundra",2]<- 5.23 #changing 1 day loss to an average of 0.5 and 2 day loss. 
 
 ggplot()+
   geom_point(data = DOC_lost17, aes(x=DOC_init17, y = DOC_lost17,  color =Site), shape = 15, size = 3)+
   geom_point(data = DOC_lost22, aes(x=DOC_init22, y = DOC_lost22,  color =Site), size = 3)+
+  geom_point(data = DOC_lost17, aes(x=DOC_init17, y = DOC_lost171D,  color =Site), shape = 0, size = 3)+
+  geom_point(data = DOC_lost22, aes(x=DOC_init22, y = DOC_lost221D,  color =Site), shape= 1,size = 3)+
   scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.term, col.glacier, col.lake_in, col.glacier, col.term, col.nellie), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra"  ,"Terminus" , "Glacier", "lake inlet", 'glacial', 'terminus', 'nellie_juan'))+
   theme_cust()+
   ylim(0,75)+
   ylab("DOC percent lost")+
   xlab("Initial DOC") 
 
+
+ggplot()+
+  geom_point(data = DOC_lost22, aes(x=DOC_meanFI, y = DOC_lost22,  color =Site), size = 3)+
+  scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.term, col.glacier, col.lake_in, col.glacier, col.term, col.nellie), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra"  ,"Terminus" , "Glacier", "lake inlet", 'glacial', 'terminus', 'nellie_juan'))+
+  theme_cust()+
+  #ylim(0,75)+
+  xlab("Mean initial FI")+
+  ylab("DOC percent lost") 
+
 # More code for plotting 14C data against incubation data is in original Grab_sample_analysis.R script 
 #- as of right now, they aren't going to be used in the paper so they weren't ported over 
 
+# Comparing FI before and after incubations
+FI_compare <- incub_summary22[!is.na(incub_summary22$mean_FI),] %>%
+  select(Site, Time.Point, mean_FI)
 
+
+ggplot(data = FI_compare,aes(x = factor(Site, level = c("Tundra" , "shrub_creek" ,"Forest" , "Glacier" ,"Nellie_Juan" ,"Terminus")),  y = mean_FI))+
+  geom_point(aes(shape = factor(Time.Point)), size = 3,width = 0.2)+
+  theme_cust() +
+  theme(axis.text.x=element_text(angle = -45, hjust = 0))+
+  #theme(legend.position = "outside")+ 
+  theme(aspect.ratio = 1/1)+
+  theme(axis.text = element_text(size = 14))+
+  theme(axis.title = element_text(size = 14))  
+
+
+  

@@ -49,11 +49,11 @@ readr::write_csv(RelST_FullTS, file = file.path("outputs", "06_relative_stageTS.
 
 
 ts1<- ggplot()+
-  geom_line(data = DOC_FullTS, aes(x=as.POSIXct(datetime), y= forest), color = "#E2725B", size = 0.5)+
-  geom_line(data = DOC_FullTS, aes(x=as.POSIXct(datetime), y= tundra), color = "#A80084", size = 0.5 )+
-  geom_line(data = DOC_FullTS, aes(x=as.POSIXct(datetime), y= shrub), color = "#FFAA00", size = 0.5)+
-  geom_line(data = DOC_FullTS, aes(x=as.POSIXct(datetime), y= nellie), color = "#EA9DFF", size = 0.5)+
-  geom_line(data = DOC_FullTS, aes(x=as.POSIXct(datetime), y= gage), color = "#73DFFF", size = 0.5)+
+  geom_line(data = DOC_FullTS, aes(x=as.POSIXct(datetime), y= forest), color = col.forest, size = 0.5)+
+  geom_line(data = DOC_FullTS, aes(x=as.POSIXct(datetime), y= tundra), color = col.tundra, size = 0.5 )+
+  geom_line(data = DOC_FullTS, aes(x=as.POSIXct(datetime), y= shrub), color = col.shrub, size = 0.5)+
+  geom_line(data = DOC_FullTS, aes(x=as.POSIXct(datetime), y= nellie), color = col.nellie, size = 0.5)+
+  geom_line(data = DOC_FullTS, aes(x=as.POSIXct(datetime), y= gage), color = col.gage, size = 0.5)+
   ylab(bquote('DOC' (mgl^-1)))+
   xlab('')+
   theme_cust()
@@ -66,9 +66,9 @@ coeff <- .05 # set the shrink coeffcient of Precipitation
 # y = the center point of each bar
 # maxRange - Precipitation/coeff/2
 ts2<- ggplot(data= Precip_Q, aes(x= as.POSIXct(datetime)))+
-  geom_tile( aes( y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = 'darkslateblue', fill = 'darkslateblue')+
+  geom_tile( aes( y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = '#42ecf5', fill = '#42ecf5')+
   # Plot your discharge data
-  geom_line(aes( y = Q), alpha = 0.8, size = 0.7) +
+  geom_line(aes( y = Q), alpha = 0.8, size = 0.7, color= '#182ff5') +
   # Create a second axis with sec_axis() and format the labels to display the original precipitation units.
   scale_y_continuous(name = "Streamflow (cfs)",limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
   xlab('')+
@@ -109,7 +109,7 @@ ts4<- ggplot()+
   theme_cust()
 
 bothTS <- plot_grid(ts2, ts1, ts3, ts4, ncol=1, align = "v")
-#bothTS
+bothTS
 
 Gage_EC_comp <- merge(Precip_Q,EC_FullTS, by = 'datetime',all.x = TRUE)
 gagehyst <- ggplot(data = Gage_EC_comp)+
@@ -238,5 +238,5 @@ NDOC<- ggplot(FullTS, aes(x= nellie, y= nellie.y)) +geom_point(aes(col=as.factor
   ylim(0,4.5)+
   theme_cust()
 
-plot_grid(FDOC, NDOC, SDOC, GDOC, TDOC, FEC, NEC, SEC, GEC, TEC, ncol=5, align = "v")
+#plot_grid(FDOC, NDOC, SDOC, GDOC, TDOC, FEC, NEC, SEC, GEC, TEC, ncol=5, align = "v")
 

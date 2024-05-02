@@ -45,7 +45,7 @@ readr::write_csv(FDOM_fullTS, file = file.path("outputs", "04_FDOM_fullTS.csv"))
 #setting time bounds to pull data
 bounds <- as.POSIXct(c('01/01/2021 00:00:00','10/01/2023 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
 
-#pulling Q data form NWIS server
+#pulling Q data from NWIS server
 gauge_data <- readNWISdata(sites = '15236900', service = 'iv', parameterCd = '00060', 
                            startDate = as.Date(bounds[1]), endDate = as.Date(bounds[2])) %>%
   select(datetime = dateTime, Q = X_00060_00000) %>%
@@ -79,13 +79,31 @@ datetime_target <- data.frame(seq(start, start + months(33), by = "15 min")) #ma
 # changing column names in all data frames so they can be merged more easily
 colnames(datetime_target)<- ('datetime') 
 
+### Code to get data from the seward airport, this takes a long time to retrieve the data to commented out and can be updated if necesscary
+#Seward_met <- riem_measures( station = "PAWD", date_start = "2021-01-01", date_end = "2023-10-01" )
+#Seward_met <- Seward_met %>% select(dateTime = valid, AirT_F= tmpf )
+#Seward_met <- Seward_met[!is.na(Seward_met$AirT_F),]
+#Seward_met$dateTime <- format(round(Seward_met$dateTime, units="hours"), format='%Y-%m-%d %H:%M:%S')
+#readr::write_csv(Seward_met, file = file.path("outputs", "04_Seward_met.csv"))
+
+#Just loading processed seward met data for speed
+Seward_met <- read.csv('outputs/04_Seward_met.csv')
+Seward_met$dateTime <- strptime(Seward_met$dateTime, "%Y-%m-%d %H:%M:%S", tz = 'UTC')
+Seward_met <- Seward_met %>% 
+  mutate(Sew_AirT_C = AirT_F-32*(5/9)) %>%
+  select(datetime = dateTime, Sew_AirT_C = Sew_AirT_C)
+
 Precip_q_ts <- merge(datetime_target,gauge_data, by = 'datetime',all.x = TRUE)
 Precip_q_ts <- merge(Precip_q_ts,precip_hourly, by = 'datetime',all.x = TRUE)
 Precip_q_ts <- merge(Precip_q_ts,precip2, by = 'datetime',all.x = TRUE)
 Precip_q_ts <- merge(Precip_q_ts,airT, by = 'datetime',all.x = TRUE)
+#Precip_q_ts <- merge(Precip_q_ts,Seward_met, by = 'datetime',all.x = TRUE)
+
 
 ## Write file to outputs to use in analysis scripts 
 readr::write_csv(Precip_q_ts, file = file.path("outputs", "04_Precip_q_ts.csv"))
+
+
 
 
 
