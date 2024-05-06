@@ -58,11 +58,18 @@ PO4_a <- detect_subset %>%
   filter(PO4_detect == FALSE) %>%
   select(Site = Site,  PO4_above = n )
 
+FI_n <- core_sites %>%
+  select(FInew,Site)%>%
+  group_by(Site) %>%
+  count(Site) %>%
+  select(Site = Site,  FI_count= n )
+
 Detect_table <- merge( PO4, PO4_a, by= 'Site', all.x =  TRUE)
 Detect_table <- merge(Detect_table, NO3, by= 'Site', all.x =  TRUE)
 Detect_table <- merge(Detect_table, NO3a, by= 'Site', all.x =  TRUE)
 Detect_table <- merge(Detect_table, DOC , by= 'Site', all.x =  TRUE)
 Detect_table <- merge(Detect_table, DOCa, by= 'Site', all.x =  TRUE)
+Detect_table <- merge(Detect_table, FI_n, by= 'Site', all.x =  TRUE)
 
 #Writing detection table:
 readr::write_csv(Detect_table, file = file.path("outputs", "02_grabsample_detection_table.csv"))
@@ -80,12 +87,13 @@ max_threshold <- DOC_table %>%
   filter(doc_detect == TRUE) %>%
   summarise(max = max(DOC))
 
-DOC_plot = ggplot(cendf_DOC, aes(x= factor(group, level = c("terminus" ,  "stream_gauge","glacier_2", "nellie_juan","lake_inlet","tundra" , "shrub_creek" ,"forest")), y=ros.model, fill= as.factor(group))) +
+DOC_plot = ggplot(cendf_DOC, aes(x= factor(group, level = c("glacier_2","lake_inlet","tundra" , "shrub_creek" ,"forest" ,"terminus" ,  "stream_gauge" ,"nellie_juan" )), y=ros.model, fill= as.factor(group))) +
   geom_boxplot(coef=1.5, outlier.shape = 19) +
   scale_fill_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage, col.term, col.glacier, col.lake_in ), breaks = c( "forest" , "nellie_juan" , "shrub_creek" , "tundra" , "stream_gauge" ,"terminus" , "glacier_2", "lake_inlet"))+
   geom_hline(yintercept = max_threshold[[1]], linetype="dashed", color = "#1A237E", size=1) +
   ylab(bquote('DOC' (mgl^-1)))+
   xlab("")+
+  ylim(-0.2,3.2)+
   scale_x_discrete(labels=c("forest" = "Forest", "nellie_juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "tundra"= "Tundra" , "stream_gauge"= "Gage" ,"terminus" =  "Terminus", "glacier_2" = "Glacier", "lake_inlet" = "Upper Tundra"))+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -45, hjust = 0))+
@@ -114,6 +122,7 @@ NO3_plot = ggplot(cendf_NO3, aes(x=factor(group, level = c("glacier_2","lake_inl
   geom_hline(yintercept = max_threshold[[1]], linetype="dashed", color = "#1A237E", size=1) +
   ylab(bquote('Nitrate' (mgl^-1)))+
   xlab("")+
+  ylim(-0.05,0.7)+
   scale_x_discrete(labels=c("forest" = "Forest", "nellie_juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "tundra"= "Tundra" , "stream_gauge"= "Gage" ,"terminus" =  "Terminus", "glacier_2" = "Glacier", "lake_inlet" = "Upper Tundra"))+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -45, hjust = 0))+
@@ -148,6 +157,7 @@ PO4_plot = ggplot(cendf_PO4, aes(x=factor(group, level = c("glacier_2","lake_inl
   geom_hline(yintercept = max_threshold[[1]], linetype="dashed", color = "#1A237E", size=1) +
   ylab(bquote('Phosphate' (mgl^-1)))+
   xlab("")+
+  ylim(-0.001,0.022)+
   scale_x_discrete(labels=c("forest" = "Forest", "nellie_juan" = "Nellie Juan" , "shrub_creek"= "Shrub" , "tundra"= "Tundra" , "stream_gauge"= "Gage" ,"terminus" =  "Terminus", "glacier_2" = "Glacier", "lake_inlet" = "Upper Tundra"))+
   theme_cust() +
   theme(axis.text.x=element_text(angle = -45, hjust = 0))+
@@ -220,7 +230,7 @@ ggplot(core_sites, aes(x=factor(Site, level = c("glacier_2","lake_inlet","tundra
   theme(axis.title = element_text(size = 16))
 
 # Phosphate box plot 
-ggplot(core_sites, aes(x=factor(Site, level = c("glacier_2","lake_inlet","tundra" , "shrub_creek" ,"forest" ,"terminus" ,  "stream_gauge" ,"nellie_juan" )), y= P_PO4, color= as.factor(Site))) +
+po4_point <- ggplot(core_sites, aes(x=factor(Site, level = c("glacier_2","lake_inlet","tundra" , "shrub_creek" ,"forest" ,"terminus" ,  "stream_gauge" ,"nellie_juan" )), y= P_PO4, color= as.factor(Site))) +
   scale_color_manual( values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF", "#059E41", "#0084A8", "#6600CC" ), breaks = c( "forest" , "nellie_juan" , "shrub_creek" , "tundra" , "stream_gauge" ,"terminus" , "glacier_2", "lake_inlet"))+
   #geom_boxplot(outlier.shape =  NA) +
   geom_jitter(shape=16, position=position_jitter(0.1))+

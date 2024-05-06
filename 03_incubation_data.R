@@ -58,7 +58,7 @@ ggplot()+
   geom_point(data = incub_summary17, aes( x = time, y = roll_pct_change, group = location, color = location), shape = 15, size = 3)+
   scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.term, col.glacier, col.lake_in, col.glacier, col.term, col.nellie), breaks = c( "Forest" , "Nellie_Juan" , "shrub_creek" , "Tundra"  ,"Terminus" , "Glacier", "lake inlet", 'glacial', 'terminus', 'nellie_juan'))+
   theme_cust()+
-  xlim(0,30)+
+  xlim(0,7)+
   #ylim(0,50)+
   ylab("DOC percent lost")+
   xlab("Days since incubation start") 
