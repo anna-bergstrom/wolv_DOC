@@ -8,14 +8,14 @@ source("paths+packages.R")
 RelST_FullTS <- read.csv('outputs/06_relative_stageTS.csv')
 DOC_FullTS <- read.csv('outputs/06_DOC_FullTS.csv')
 EC_FullTS <- read.csv('outputs/04_EC_FullTS.csv')
-Precip_Q <- read.csv('outputs/04_Precip_q_ts.csv') 
+#Precip_Q <- read.csv('outputs/04_Precip_q_ts.csv') 
 
-Seward_met <- read.csv('outputs/04_Seward_met.csv')
-Seward_met$dateTime <- strptime(Seward_met$dateTime, "%Y-%m-%d %H:%M:%S", tz = 'UTC')
-Seward_met <- Seward_met %>% 
-  mutate(Sew_AirT_C = (AirT_F-32)*(5/9)) %>%
-  select(datetime = dateTime, Sew_AirT_C = Sew_AirT_C) %>%
-  mutate(sm.sewT = rollapply(Sew_AirT_C, 32,mean, na.rm = TRUE, fill = NA))
+#New met and gage data from Seward, all getting loaded in as separate files 
+gage_data <- read.csv('outputs/04_gageQ_data.csv')
+Wx990_temp <- read.csv('outputs/04_Wx990_temp.csv')
+Seward_temp <- read.csv('outputs/04_Seward_temp.csv')
+Seward_precip <- read.csv('outputs/04_Seward_precip.csv')
+
 
 
 # Convert ISO datestrings to datetime type 
@@ -23,25 +23,37 @@ Seward_met <- Seward_met %>%
 RelST_FullTS$datetime <- strptime(RelST_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 DOC_FullTS$datetime <- strptime(DOC_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 EC_FullTS$datetime <- strptime(EC_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
-Precip_Q$datetime <- strptime(Precip_Q$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+#Precip_Q$datetime <- strptime(Precip_Q$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 
-Precip_Q <- Precip_Q %>%
-  mutate(sm.990T = rollapply(AirT, 32,mean, na.rm = TRUE, fill = NA) )
+gage_data$datetime <- strptime(gage_data$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+Wx990_temp$datetime <- strptime(Wx990_temp$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+Seward_temp$datetime <- strptime(Seward_temp$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+Seward_precip$datetime <- strptime(Seward_precip$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+
+#Precip_Q <- Precip_Q %>%
+#  mutate(sm.990T = rollapply(AirT, 32,mean, na.rm = TRUE, fill = NA) )
+
+Wx990_temp <-  Wx990_temp %>%
+  mutate(sm.990T = rollapply(AirT990, 32,mean, na.rm = TRUE, fill = NA) )
+Seward_temp <- Seward_temp %>%
+  mutate(sm.SewT = rollapply(Sew_AirT_C, 8,mean, na.rm = TRUE, fill = NA) )
 
 ########## Winter 2021-22 ##########
 bounds_W2121<- as.POSIXct(c('11/01/2021 00:00:00','06/01/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
 
-Win21_22 <- Precip_Q %>%
+Win21_22990T <- Wx990_temp %>%
   filter(as.POSIXct(datetime) >= bounds_W2121[1], as.POSIXct(datetime) <= bounds_W2121[2]) 
 
 Win21_22DOC <- DOC_FullTS %>%
   filter(as.POSIXct(datetime) >= bounds_W2121[1], as.POSIXct(datetime) <= bounds_W2121[2]) 
 
-
-Win21_22Sew <- Seward_met %>%
+Win21_22SewT <- Seward_temp %>%
   filter(as.POSIXct(datetime) >= bounds_W2121[1], as.POSIXct(datetime) <= bounds_W2121[2]) 
 
-maxRange <- 1.1*max(Win21_22$precip_mm, na.rm = TRUE) # set how wide the precip plot will be
+Win21_22SewP <- Seward_precip %>%
+  filter(as.POSIXct(datetime) >= bounds_W2121[1], as.POSIXct(datetime) <= bounds_W2121[2]) 
+
+maxRange <- 1.1*max(Win21_22SewP$precip, na.rm = TRUE) # set how wide the precip plot will be
 maxRange <- 10
 coeff <- 2 # set the shrink coeffcient of Precipitation
 
@@ -57,8 +69,8 @@ DOC21 <- ggplot()+
   theme_cust()
   
 AirT21 <- ggplot()+ 
-  geom_line(data = Win21_22Sew, aes(x=as.POSIXct(datetime), y= sm.sewT), color = '#023d1d', size = 0.5)+
-  geom_line(data = Win21_22, aes(x=as.POSIXct(datetime), y= sm.990T), color = '#9bfac6', size = 0.5)+
+  geom_line(data = Win21_22SewT, aes(x=as.POSIXct(datetime), y= sm.sewT), color = '#023d1d', size = 0.5)+
+  geom_line(data = Win21_22990T, aes(x=as.POSIXct(datetime), y= sm.990T), color = '#9bfac6', size = 0.5)+
   geom_hline(yintercept = 0, linetype="dashed", color = "#1A237E", size=0.5) +
   xlim(bounds_W2121)+
   xlab('')+
@@ -66,7 +78,7 @@ AirT21 <- ggplot()+
   theme_cust()  
 
 Precip21 <- ggplot()+     
-  geom_tile(data = Win21_22, aes(x=as.POSIXct(datetime), y = maxRange - precip_mm/2, height = precip_mm),  color = '#42ecf5', fill = '#42ecf5')+ 
+  geom_tile(data = Win21_22SewP, aes(x=as.POSIXct(datetime), y = maxRange - precip/2, height = precip),  color = '#42ecf5', fill = '#42ecf5')+ 
   #scale_y_reverse()+
   xlim(bounds_W2121)+
   ylab(bquote('Precipiation ' (mmhr^-1)))+

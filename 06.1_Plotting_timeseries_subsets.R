@@ -8,7 +8,14 @@ source("paths+packages.R")
 RelST_FullTS <- read.csv('outputs/06_relative_stageTS.csv')
 DOC_FullTS <- read.csv('outputs/06_DOC_FullTS.csv')
 EC_FullTS <- read.csv('outputs/04_EC_FullTS.csv')
-Precip_Q <- read.csv('outputs/04_Precip_q_ts.csv') 
+#Precip_Q <- read.csv('outputs/04_Precip_q_ts.csv') 
+
+
+#New met and gage data from Seward, all getting loaded in as separate files 
+gage_data <- read.csv('outputs/04_gageQ_data.csv')
+Wx990_temp <- read.csv('outputs/04_Wx990_temp.csv')
+Seward_temp <- read.csv('outputs/04_Seward_temp.csv')
+Seward_precip <- read.csv('outputs/04_Seward_precip.csv')
 
 
 # Convert ISO datestrings to datetime type 
@@ -16,7 +23,12 @@ Precip_Q <- read.csv('outputs/04_Precip_q_ts.csv')
 RelST_FullTS$datetime <- strptime(RelST_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 DOC_FullTS$datetime <- strptime(DOC_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 EC_FullTS$datetime <- strptime(EC_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
-Precip_Q$datetime <- strptime(Precip_Q$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+#Precip_Q$datetime <- strptime(Precip_Q$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+
+gage_data$datetime <- strptime(gage_data$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+Wx990_temp$datetime <- strptime(Wx990_temp$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+Seward_temp$datetime <- strptime(Seward_temp$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+Seward_precip$datetime <- strptime(Seward_precip$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 
 # Setting up end points for color palettes that are a gradient as a function of time
 gagePal <- colorRampPalette(c('#d2f3fc','#02c1fa'))
@@ -28,8 +40,8 @@ nelliePal <- colorRampPalette(c('#e5c2fc','#9700fc'))
 ########## Snow melt 2022 ##########
 bounds_Mmay22<- as.POSIXct(c('05/14/2022 00:00:00','05/16/2022 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
 
-Mmay22 <- Precip_Q %>%
-  filter(as.POSIXct(datetime) >= bounds_Mmay22[1], as.POSIXct(datetime) <= bounds_Mmay22[2]) 
+#Mmay22 <- Precip_Q %>%
+  #filter(as.POSIXct(datetime) >= bounds_Mmay22[1], as.POSIXct(datetime) <= bounds_Mmay22[2]) 
 
 Mmay22DOC <- DOC_FullTS %>%
   filter(as.POSIXct(datetime) >= bounds_Mmay22[1], as.POSIXct(datetime) <= bounds_Mmay22[2]) 

@@ -9,15 +9,26 @@ source("paths+packages.R")
 Stage_FullTS <- read.csv('outputs/04_Stage_FullTS.csv')
 FDOM_fullTS <- read.csv('outputs/04_FDOM_FullTS.csv')
 EC_FullTS <- read.csv('outputs/04_EC_FullTS.csv')
-Precip_Q <- read.csv('outputs/04_Precip_q_ts.csv') 
+#Precip_Q <- read.csv('outputs/04_Precip_q_ts.csv') 
 fit_model <- readRDS('outputs/DOC_fdom_model.RData')
+
+#New met and gage data from Seward, all getting loaded in as separate files 
+gage_data <- read.csv('outputs/04_gageQ_data.csv')
+Wx990_temp <- read.csv('outputs/04_Wx990_temp.csv')
+Seward_temp <- read.csv('outputs/04_Seward_temp.csv')
+Seward_precip <- read.csv('outputs/04_Seward_precip.csv')
 
 # Convert ISO datestrings to datetime type 
 # All times were converted to UTC in previous processing scripts - we'll just work in UTC for consistency here
 Stage_FullTS$datetime <- strptime(Stage_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 FDOM_fullTS$datetime <- strptime(FDOM_fullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 EC_FullTS$datetime <- strptime(EC_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
-Precip_Q$datetime <- strptime(Precip_Q$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+#Precip_Q$datetime <- strptime(Precip_Q$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+
+gage_data$datetime <- strptime(gage_data$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+Wx990_temp$datetime <- strptime(Wx990_temp$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+Seward_temp$datetime <- strptime(Seward_temp$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+Seward_precip$datetime <- strptime(Seward_precip$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 
 ############## Applying linear regression to convert FDOM time series to DOC
 DOC_FullTS <- fit_model$slope*FDOM_fullTS[2:6]+fit_model$intercept
@@ -65,13 +76,14 @@ coeff <- .05 # set the shrink coeffcient of Precipitation
 # Use geom_tile to create the inverted hyetograph
 # y = the center point of each bar
 # maxRange - Precipitation/coeff/2
-ts2<- ggplot(data= Precip_Q, aes(x= as.POSIXct(datetime)))+
-  geom_tile( aes( y = maxRange - precip_mm/coeff/2, height = precip_mm/coeff),  color = '#42ecf5', fill = '#42ecf5')+
+ts2<- ggplot()+
+  geom_tile( data= Seward_precip, aes(x= as.POSIXct(datetime), y = maxRange - precip/coeff/2, height = precip/coeff),  color = '#42ecf5', fill = '#42ecf5')+
   # Plot your discharge data
-  geom_line(aes( y = Q), alpha = 0.8, size = 0.7, color= '#182ff5') +
+  geom_line(data = gage_data, aes(x= as.POSIXct(datetime), y = Q), alpha = 0.8, size = 0.7, color= '#182ff5') +
   # Create a second axis with sec_axis() and format the labels to display the original precipitation units.
   scale_y_continuous(name = "Streamflow (cfs)",limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
   xlab('')+
+  xlim(as.POSIXct(DOC_FullTS$datetime[1]), as.POSIXct(tail(DOC_FullTS$datetime, n=1)))+
   theme_cust()
 
 tundra_sub <- EC_FullTS[!is.na(EC_FullTS$tundra), ]
