@@ -9,11 +9,11 @@ source("paths+packages.R")
 Stage_FullTS <- read.csv('outputs/04_Stage_FullTS.csv')
 FDOM_fullTS <- read.csv('outputs/04_FDOM_FullTS.csv')
 EC_FullTS <- read.csv('outputs/04_EC_FullTS.csv')
-#Precip_Q <- read.csv('outputs/04_Precip_q_ts.csv') 
+Precip_Q <- read.csv('outputs/04_Precip_q_ts.csv') 
 fit_model <- readRDS('outputs/DOC_fdom_model.RData')
 
 #New met and gage data from Seward, all getting loaded in as separate files 
-gage_data <- read.csv('outputs/04_gageQ_data.csv')
+#gage_data <- read.csv('outputs/04_gageQ_data.csv')
 Wx990_temp <- read.csv('outputs/04_Wx990_temp.csv')
 Seward_temp <- read.csv('outputs/04_Seward_temp.csv')
 Seward_precip <- read.csv('outputs/04_Seward_precip.csv')
@@ -23,9 +23,9 @@ Seward_precip <- read.csv('outputs/04_Seward_precip.csv')
 Stage_FullTS$datetime <- strptime(Stage_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 FDOM_fullTS$datetime <- strptime(FDOM_fullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 EC_FullTS$datetime <- strptime(EC_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
-#Precip_Q$datetime <- strptime(Precip_Q$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+Precip_Q$datetime <- strptime(Precip_Q$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 
-gage_data$datetime <- strptime(gage_data$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+#gage_data$datetime <- strptime(gage_data$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 Wx990_temp$datetime <- strptime(Wx990_temp$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 Seward_temp$datetime <- strptime(Seward_temp$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 Seward_precip$datetime <- strptime(Seward_precip$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
@@ -54,6 +54,29 @@ colnames(RelST_FullTS) <- c("datetime","forest", "shrub", "tundra", "nellie", "g
 
 readr::write_csv(RelST_FullTS, file = file.path("outputs", "06_relative_stageTS.csv"))
 
+
+####### creating grouping so lines are not connected across no data in the plot###########
+my_func <- function(x) {
+  g_num <- 1
+  return_vect <- vector(mode='double',length=length(x))
+  for(i in 1:length(x)) {
+    if (is.na(x[i])){
+      return_vect[i] <- NA
+      g_num <- g_num+1
+    }
+    else {
+      return_vect[i] <- g_num
+    }
+  }
+  return(return_vect)
+}
+
+# create the new column
+#gage_data$g <- my_func(gage_data$Q)
+
+
+
+
 ########## Creating a multi-panel plot of the full two years of data ######################
 
 #FDOM data 
@@ -79,7 +102,7 @@ coeff <- .05 # set the shrink coeffcient of Precipitation
 ts2<- ggplot()+
   geom_tile( data= Seward_precip, aes(x= as.POSIXct(datetime), y = maxRange - precip/coeff/2, height = precip/coeff),  color = '#42ecf5', fill = '#42ecf5')+
   # Plot your discharge data
-  geom_line(data = gage_data, aes(x= as.POSIXct(datetime), y = Q), alpha = 0.8, size = 0.7, color= '#182ff5') +
+  geom_line(data = Precip_Q, aes(x= as.POSIXct(datetime), y = Q), alpha = 0.8, size = 0.7, color= '#182ff5') +
   # Create a second axis with sec_axis() and format the labels to display the original precipitation units.
   scale_y_continuous(name = "Streamflow (cfs)",limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
   xlab('')+
@@ -92,11 +115,11 @@ nellie_sub <- EC_FullTS[!is.na(EC_FullTS$nellie), ]
 shrub_sub <- EC_FullTS[!is.na(EC_FullTS$shrub), ]
 gage_sub <- EC_FullTS[!is.na(EC_FullTS$gage), ]
 ts3<- ggplot()+
-  geom_line(data = tundra_sub,aes(x=as.POSIXct(datetime), y= tundra), color = col.tundra, size = 0.5)+
-  geom_line(data = forest_sub,aes(x=as.POSIXct(datetime), y= forest), color = col.forest, size = 0.5)+
-  geom_line(data = nellie_sub,aes(x=as.POSIXct(datetime), y= nellie), color = col.nellie, size = 0.5)+
-  geom_line(data = shrub_sub,aes(x=as.POSIXct(datetime), y= shrub), color = col.shrub, size = 0.5)+
-  geom_line(data = gage_sub,aes(x=as.POSIXct(datetime), y= gage), color = col.gage, size = 0.5)+
+  geom_line(data = EC_FullTS,aes(x=as.POSIXct(datetime), y= tundra), color = col.tundra, size = 0.5)+
+  geom_line(data = EC_FullTS,aes(x=as.POSIXct(datetime), y= forest), color = col.forest, size = 0.5)+
+  geom_line(data = EC_FullTS,aes(x=as.POSIXct(datetime), y= nellie), color = col.nellie, size = 0.5)+
+  geom_line(data = EC_FullTS,aes(x=as.POSIXct(datetime), y= shrub), color = col.shrub, size = 0.5)+
+  geom_line(data = EC_FullTS,aes(x=as.POSIXct(datetime), y= gage), color = col.gage, size = 0.5)+
   ylab(expression(paste("EC (" ,  mu,  "S cm"^"-1", ")"))) + 
   xlab('')+
   theme_cust()
@@ -111,11 +134,11 @@ nellie_sub <- RelST_FullTS[!is.na(Stage_FullTS$nellie), ]
 shrub_sub <- RelST_FullTS[!is.na(Stage_FullTS$shrub), ]
 gage_sub <- RelST_FullTS[!is.na(Stage_FullTS$gage), ]
 ts4<- ggplot()+
-  geom_line(data = tundra_sub,aes(x=as.POSIXct(datetime), y= tundra), color = col.tundra, size = 0.5)+
-  geom_line(data = forest_sub,aes(x=as.POSIXct(datetime), y= forest), color = col.forest, size = 0.5)+
-  geom_line(data = nellie_sub,aes(x=as.POSIXct(datetime), y= nellie), color = col.nellie, size = 0.5)+
-  geom_line(data = shrub_sub,aes(x=as.POSIXct(datetime), y= shrub), color = col.shrub, size = 0.5)+
-  geom_line(data = gage_sub,aes(x=as.POSIXct(datetime), y= gage), color = col.gage, size = 0.5)+
+  geom_line(data = RelST_FullTS,aes(x=as.POSIXct(datetime), y= tundra), color = col.tundra, size = 0.5)+
+  geom_line(data = RelST_FullTS,aes(x=as.POSIXct(datetime), y= forest), color = col.forest, size = 0.5)+
+  geom_line(data = RelST_FullTS,aes(x=as.POSIXct(datetime), y= nellie), color = col.nellie, size = 0.5)+
+  geom_line(data = RelST_FullTS,aes(x=as.POSIXct(datetime), y= shrub), color = col.shrub, size = 0.5)+
+  geom_line(data = RelST_FullTS,aes(x=as.POSIXct(datetime), y= gage), color = col.gage, size = 0.5)+
   ylab("Stage") + 
   xlab('')+
   theme_cust()

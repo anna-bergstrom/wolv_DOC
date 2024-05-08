@@ -53,7 +53,7 @@ Win21_22SewT <- Seward_temp %>%
 Win21_22SewP <- Seward_precip %>%
   filter(as.POSIXct(datetime) >= bounds_W2121[1], as.POSIXct(datetime) <= bounds_W2121[2]) 
 
-maxRange <- 1.1*max(Win21_22SewP$precip, na.rm = TRUE) # set how wide the precip plot will be
+
 maxRange <- 10
 coeff <- 2 # set the shrink coeffcient of Precipitation
 
@@ -69,7 +69,7 @@ DOC21 <- ggplot()+
   theme_cust()
   
 AirT21 <- ggplot()+ 
-  geom_line(data = Win21_22SewT, aes(x=as.POSIXct(datetime), y= sm.sewT), color = '#023d1d', size = 0.5)+
+  geom_line(data = Win21_22SewT, aes(x=as.POSIXct(datetime), y= sm.SewT), color = '#023d1d', size = 0.5)+
   geom_line(data = Win21_22990T, aes(x=as.POSIXct(datetime), y= sm.990T), color = '#9bfac6', size = 0.5)+
   geom_hline(yintercept = 0, linetype="dashed", color = "#1A237E", size=0.5) +
   xlim(bounds_W2121)+
@@ -92,19 +92,21 @@ print(win21_full_plot)
 ########## Winter 2022-23 ##########
 bounds_W2223<- as.POSIXct(c('11/01/2022 00:00:00','06/01/2023 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
 
-Win22_23 <- Precip_Q %>%
+Win22_23990T <- Wx990_temp %>%
   filter(as.POSIXct(datetime) >= bounds_W2223[1], as.POSIXct(datetime) <= bounds_W2223[2]) 
 
 Win22_23DOC <- DOC_FullTS %>%
   filter(as.POSIXct(datetime) >= bounds_W2223[1], as.POSIXct(datetime) <= bounds_W2223[2]) 
 
-Win22_23Sew <- Seward_met %>%
+Win22_23SewT <- Seward_temp %>%
   filter(as.POSIXct(datetime) >= bounds_W2223[1], as.POSIXct(datetime) <= bounds_W2223[2]) 
 
-maxRange <- 10 # set how wide of the first axis (streamflow)
-coeff <- 2 # set the shrink coeffcient of Precipitation
+Win22_23SewP <- Seward_precip %>%
+  filter(as.POSIXct(datetime) >= bounds_W2223[1], as.POSIXct(datetime) <= bounds_W2223[2]) 
 
-#maxRange <- 1.1*max(Win22_23$precip_mm, na.rm = TRUE) # set how wide the precip plot will be
+
+
+
 maxRange <- 10
 coeff <- 2 # set the shrink coeffcient of Precipitation
 

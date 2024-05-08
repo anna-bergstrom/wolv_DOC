@@ -87,19 +87,19 @@ gauge_data <- readNWISdata(sites = '15236900', service = 'iv', parameterCd = '00
 #readr::write_csv(Seward_met, file = file.path("outputs", "04_Seward_met.csv"))
 #merging to one data frame
 
-start <- Seward_temp$datetime[1] #finding the first time step with data (i.e. Jan 1 00:00)
-datetime_target <- data.frame(seq(start, start + months(33), by = "15 min")) #making the 15 min timeseries all other data will be matched to. 
+
+#datetime_target <- data.frame(seq(bounds[1], bounds[1] + months(33), by = "15 min")) #making the 15 min timeseries all other data will be matched to. 
 # changing column names in all data frames so they can be merged more easily
-colnames(datetime_target)<- ('datetime') 
+#colnames(datetime_target)<- ('datetime') 
 
 #Add to this as outputs change
-Precip_q_ts <- merge(datetime_target,gauge_data, by = 'datetime',all.x = TRUE)
+#Precip_q_ts <- merge(datetime_target,gauge_data, by = 'datetime',all.x = TRUE)
 
 #########Just loading processed Seward and other met data for speed ############
 Seward_precip <- read.csv('data/PAWD.precip.no.zero.csv') %>%
   select(datetime = valid, precip = p01m)
-Seward_precip$datetime <- strptime(Seward_precip$datetime, "%Y-%m-%d %H:%M", tz = 'UTC')
-Seward_precip$datetime <- as.POSIXct(format(round(Seward_precip$datetime, units="hours"), format='%Y-%m-%d %H:%M:%S'))
+Seward_precip$datetime <- as.POSIXct(Seward_precip$datetime, "%Y-%m-%d %H:%M", tz = 'UTC')
+Seward_precip$datetime <- as.POSIXct(round_date(Seward_precip$datetime, unit="hours"))
 readr::write_csv(Seward_precip, file = file.path("outputs", "04_Seward_precip.csv"))
 
 Seward_temp <- read.csv('outputs/04_Seward_met.csv')
