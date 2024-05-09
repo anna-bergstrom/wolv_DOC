@@ -123,8 +123,8 @@ DOC22 <- ggplot()+
   theme_cust()
 
 AirT22 <- ggplot()+ 
-  geom_line(data = Win22_23Sew, aes(x=as.POSIXct(datetime), y= sm.sewT), color = '#023d1d', size = 0.5)+
-  geom_line(data = Win22_23, aes(x=as.POSIXct(datetime), y= sm.990T), color = '#9bfac6', size = 0.5)+
+  geom_line(data = Win22_23SewT, aes(x=as.POSIXct(datetime), y= sm.SewT), color = '#023d1d', size = 0.5)+
+  geom_line(data = Win22_23990T, aes(x=as.POSIXct(datetime), y= sm.990T), color = '#9bfac6', size = 0.5)+
   geom_hline(yintercept = 0, linetype="dashed", color = "#1A237E", size=0.5) +
   xlim(bounds_W2223)+
   xlab('')+
@@ -132,7 +132,7 @@ AirT22 <- ggplot()+
   theme_cust()  
 
 Precip22 <- ggplot()+     
-  geom_tile(data = Win22_23, aes(x=as.POSIXct(datetime), y = maxRange - precip_mm/2, height = precip_mm),  color = '#42ecf5', fill = '#42ecf5')+ 
+  geom_tile(data = Win22_23SewP, aes(x=as.POSIXct(datetime), y = maxRange - precip/2, height = precip),  color = '#42ecf5', fill = '#42ecf5')+ 
   #scale_y_reverse()+
   xlim(bounds_W2223)+
   ylab(bquote('Precipiation ' (mmhr^-1)))+

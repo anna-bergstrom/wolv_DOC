@@ -80,13 +80,16 @@ gauge_data <- readNWISdata(sites = '15236900', service = 'iv', parameterCd = '00
 
 
 ### Code to get data from the seward airport, this takes a long time to retrieve the data to commented out and can be updated if necesscary
-#Seward_met <- riem_measures( station = "PAWD", date_start = "2021-01-01", date_end = "2023-10-01" )
-#Seward_met <- Seward_met %>% select(dateTime = valid, AirT_F= tmpf )
-#Seward_met <- Seward_met[!is.na(Seward_met$AirT_F),]
-#Seward_met$dateTime <- format(round(Seward_met$dateTime, units="hours"), format='%Y-%m-%d %H:%M:%S')
-#readr::write_csv(Seward_met, file = file.path("outputs", "04_Seward_met.csv"))
-#merging to one data frame
+Seward_met <- riem_measures( station = "PAWD", date_start = "2021-01-01", date_end = "2023-10-01" )
+Seward_met <- Seward_met %>% select(dateTime = valid, AirT_F= tmpf )
+Seward_met <- Seward_met[!is.na(Seward_met$AirT_F),]
+Seward_met$dateTime <- format(round(Seward_met$dateTime, units="hours"), format='%Y-%m-%d %H:%M:%S')
 
+Seward_met$dateTime <- as.POSIXct(Seward_met$dateTime, "%Y-%m-%d %H:%M:%S", tz = 'UTC')
+Seward_temp <- Seward_met %>% 
+  mutate(Sew_AirT_C = (AirT_F-32)*(5/9)) %>%
+  select(datetime = dateTime, Sew_AirT_C = Sew_AirT_C)
+readr::write_csv(Seward_temp, file = file.path("outputs", "04_Seward_temp.csv"))
 
 #datetime_target <- data.frame(seq(bounds[1], bounds[1] + months(33), by = "15 min")) #making the 15 min timeseries all other data will be matched to. 
 # changing column names in all data frames so they can be merged more easily
@@ -102,12 +105,6 @@ Seward_precip$datetime <- as.POSIXct(Seward_precip$datetime, "%Y-%m-%d %H:%M", t
 Seward_precip$datetime <- as.POSIXct(round_date(Seward_precip$datetime, unit="hours"))
 readr::write_csv(Seward_precip, file = file.path("outputs", "04_Seward_precip.csv"))
 
-Seward_temp <- read.csv('outputs/04_Seward_met.csv')
-Seward_temp$dateTime <- strptime(Seward_temp$dateTime, "%Y-%m-%d %H:%M:%S", tz = 'UTC')
-Seward_temp <- Seward_temp %>% 
-  mutate(Sew_AirT_C = AirT_F-32*(5/9)) %>%
-  select(datetime = dateTime, Sew_AirT_C = Sew_AirT_C)
-readr::write_csv(Seward_temp, file = file.path("outputs", "04_Seward_temp.csv"))
 
 ## Pulling 990 temp data for winter plots from an existing combined dataset 
 #will need to make some decisions on how this will work for the paper 
