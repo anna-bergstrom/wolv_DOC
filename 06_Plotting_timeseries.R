@@ -89,6 +89,7 @@ ts1<- ggplot()+
   geom_line(data = DOC_FullTS, aes(x=as.POSIXct(datetime), y= nellie), color = col.nellie, size = 0.5)+
   geom_line(data = DOC_FullTS, aes(x=as.POSIXct(datetime), y= gage), color = col.gage, size = 0.5)+
   ylab(bquote('DOC' (mgl^-1)))+
+  scale_x_datetime(date_breaks = "months" , date_labels = "%b")+
   xlab('')+
   theme_cust()
 
@@ -106,7 +107,7 @@ ts2<- ggplot()+
   # Create a second axis with sec_axis() and format the labels to display the original precipitation units.
   scale_y_continuous(name = "Streamflow (cfs)",limit = c(0, maxRange),expand = c(0, 0),sec.axis = sec_axis(trans = ~(.-maxRange)*coeff,name = "Precipitation (mm/hr)"))+
   xlab('')+
-  xlim(as.POSIXct(DOC_FullTS$datetime[1]), as.POSIXct(tail(DOC_FullTS$datetime, n=1)))+
+  scale_x_datetime(limits = c(as.POSIXct(DOC_FullTS$datetime[1]), as.POSIXct(tail(DOC_FullTS$datetime, n=1))),breaks = scales::date_breaks("months")  , date_labels = "%b")+
   theme_cust()
 
 tundra_sub <- EC_FullTS[!is.na(EC_FullTS$tundra), ]
@@ -121,6 +122,7 @@ ts3<- ggplot()+
   geom_line(data = EC_FullTS,aes(x=as.POSIXct(datetime), y= shrub), color = col.shrub, size = 0.5)+
   geom_line(data = EC_FullTS,aes(x=as.POSIXct(datetime), y= gage), color = col.gage, size = 0.5)+
   ylab(expression(paste("EC (" ,  mu,  "S cm"^"-1", ")"))) + 
+  scale_x_datetime(breaks = scales::date_breaks("months")  , date_labels = "%b")+
   xlab('')+
   theme_cust()
 
@@ -140,6 +142,7 @@ ts4<- ggplot()+
   geom_line(data = RelST_FullTS,aes(x=as.POSIXct(datetime), y= shrub), color = col.shrub, size = 0.5)+
   geom_line(data = RelST_FullTS,aes(x=as.POSIXct(datetime), y= gage), color = col.gage, size = 0.5)+
   ylab("Stage") + 
+  scale_x_datetime(date_breaks = "months" , date_labels = "%b")+
   xlab('')+
   theme_cust()
 

@@ -17,6 +17,7 @@ library(NADA)
 library(reshape2)
 library(riem) 
 library(naniar)
+library(scales)
 
 # Setting up paths for data and scripts
 

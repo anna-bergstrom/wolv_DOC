@@ -63,7 +63,8 @@ DOC21 <- ggplot()+
   geom_line(data = Win21_22DOC, aes(x=as.POSIXct(datetime), y= shrub), color = "#FFAA00", size = 0.5)+
   geom_line(data = Win21_22DOC, aes(x=as.POSIXct(datetime), y= nellie), color = "#EA9DFF", size = 0.5)+
   geom_line(data = Win21_22DOC, aes(x=as.POSIXct(datetime), y= gage), color = "#73DFFF", size = 0.5)+
-  xlim(bounds_W2121)+
+  #xlim(bounds_W2121)+
+  scale_x_datetime(limits = as.POSIXct(bounds_W2121),breaks = scales::date_breaks("months")  , date_labels = "%b")+
   xlab('')+
   ylab(bquote('DOC' (mgl^-1)))+
   theme_cust()
@@ -72,7 +73,8 @@ AirT21 <- ggplot()+
   geom_line(data = Win21_22SewT, aes(x=as.POSIXct(datetime), y= sm.SewT), color = '#023d1d', size = 0.5)+
   geom_line(data = Win21_22990T, aes(x=as.POSIXct(datetime), y= sm.990T), color = '#9bfac6', size = 0.5)+
   geom_hline(yintercept = 0, linetype="dashed", color = "#1A237E", size=0.5) +
-  xlim(bounds_W2121)+
+  #xlim(bounds_W2121)+
+  scale_x_datetime(limits = as.POSIXct(bounds_W2121),breaks = scales::date_breaks("months")  , date_labels = "%b")+
   xlab('')+
   ylab(bquote('Air Temperature (\u00B0C)'))+
   theme_cust()  
@@ -80,7 +82,8 @@ AirT21 <- ggplot()+
 Precip21 <- ggplot()+     
   geom_tile(data = Win21_22SewP, aes(x=as.POSIXct(datetime), y = maxRange - precip/2, height = precip),  color = '#42ecf5', fill = '#42ecf5')+ 
   #scale_y_reverse()+
-  xlim(bounds_W2121)+
+  #xlim(bounds_W2121)+
+  scale_x_datetime(limits = as.POSIXct(bounds_W2121),breaks = scales::date_breaks("months")  , date_labels = "%b")+
   ylab(bquote('Precipiation ' (mmhr^-1)))+
   xlab('')+
   ylim(0,maxRange)+
@@ -116,8 +119,8 @@ DOC22 <- ggplot()+
   geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= shrub), color = col.shrub, size = 0.5)+
   geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= nellie), color = col.nellie, size = 0.5)+
   geom_line(data = Win22_23DOC, aes(x=as.POSIXct(datetime), y= gage), color = col.gage, size = 0.5)+
-  xlim(bounds_W2223)+
-  #scale_x_date(breaks = as.Date(c("2022-11-01", "2022-12-01", "2023-01-01", "2023-02-01","2023-03-01",  "2023-04-01", "2023-05-01" )))+
+  #xlim(bounds_W2223)+
+  scale_x_datetime(limits = as.POSIXct(bounds_W2223),breaks = scales::date_breaks("months")  , date_labels = "%b")+
   xlab('')+
   ylab(bquote('DOC' (mgl^-1)))+
   theme_cust()
@@ -126,7 +129,8 @@ AirT22 <- ggplot()+
   geom_line(data = Win22_23SewT, aes(x=as.POSIXct(datetime), y= sm.SewT), color = '#023d1d', size = 0.5)+
   geom_line(data = Win22_23990T, aes(x=as.POSIXct(datetime), y= sm.990T), color = '#9bfac6', size = 0.5)+
   geom_hline(yintercept = 0, linetype="dashed", color = "#1A237E", size=0.5) +
-  xlim(bounds_W2223)+
+  #xlim(bounds_W2223)+
+  scale_x_datetime(limits = as.POSIXct(bounds_W2223),breaks = scales::date_breaks("months")  , date_labels = "%b")+
   xlab('')+
   ylab(bquote('Air Temperature (\u00B0C)'))+
   theme_cust()  
@@ -134,7 +138,8 @@ AirT22 <- ggplot()+
 Precip22 <- ggplot()+     
   geom_tile(data = Win22_23SewP, aes(x=as.POSIXct(datetime), y = maxRange - precip/2, height = precip),  color = '#42ecf5', fill = '#42ecf5')+ 
   #scale_y_reverse()+
-  xlim(bounds_W2223)+
+  #xlim(bounds_W2223)+
+  scale_x_datetime(limits = as.POSIXct(bounds_W2223),breaks = scales::date_breaks("months")  , date_labels = "%b")+
   ylab(bquote('Precipiation ' (mmhr^-1)))+
   xlab('')+
   ylim(0,maxRange)+
