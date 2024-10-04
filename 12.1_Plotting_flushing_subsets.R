@@ -143,14 +143,47 @@ for (i in 1:nrow(event_dates)){
 event_dates <- event_dates %>%
   mutate(API_rescaled = rescale(event_dates$API, to = c(0.5,5)))
 
+##### Removing winter events #######
+
+event_dates_sub <- event_dates %>% 
+  filter(month(as.POSIXct(event_dates$Start)) > 4 & month(as.POSIXct(event_dates$Start)) < 11)
+
+###### linear regressions with mean FI ###########
+
+Forest_FI <- event_dates_sub[which(event_dates_sub$Site == "forest"),] 
+forest_lm <- lm(DOC_FIm ~ EC_FIm, Forest_FI)
+summary(forest_lm) #significant
+
+gage_FI <- event_dates_sub[which(event_dates_sub$Site == "gage"),] 
+gage_lm <- lm(DOC_FIm ~ EC_FIm, gage_FI)
+summary(gage_lm) # p-value = 0.057 
+
+nellie_FI <- event_dates_sub[which(event_dates_sub$Site == "nellie"),] 
+nellie_lm <- lm(DOC_FIm ~ EC_FIm, nellie_FI)
+summary(nellie_lm) #not significant
+
+tundra_FI <- event_dates_sub[which(event_dates_sub$Site == "tundra"),] 
+tundra_lm <- lm(DOC_FIm ~ EC_FIm, tundra_FI)
+summary(tundra_lm) #not significant 
+
+shrub_FI <- event_dates_sub[which(event_dates_sub$Site == "shrub"),] 
+shrub_lm <- lm(DOC_FIm ~ EC_FIm, shrub_FI)
+summary(shrub_lm) #significant 
+
+
 ############# Plotting ########################
 
+### Using mean FI #######
 #first plot: point sizes all scaled by API
 ggplot()+
-  geom_point(data = event_dates, aes(x=EC_FIm, y= DOC_FIm, color = Site), size = event_dates$API_rescaled)+
-  scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage), breaks = c( "forest" , "nellie" , "shrub" , "tundra" , 'gage'))+
   geom_hline(yintercept = 0)+
   geom_vline(xintercept = 0)+
+  geom_abline(intercept = coef(forest_lm)[1], slope = coef(forest_lm)[2], colour = col.forest)+
+  geom_abline(intercept = coef(shrub_lm)[1], slope = coef(shrub_lm)[2], colour = col.shrub)+
+  geom_abline(intercept = coef(gage_lm)[1], slope = coef(gage_lm)[2], colour = col.gage)+
+  geom_point(data = event_dates_sub, aes(x=EC_FIm, y= DOC_FIm, color = Site, size = event_dates_sub$API_rescaled) )+
+  scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage), breaks = c( "forest" , "nellie" , "shrub" , "tundra" , 'gage'))+
+
   ylim(-0.65,0.65)+
   xlim(-0.65,0.65)+
   xlab('EC Flushing Index')+
@@ -165,6 +198,37 @@ event_dates <- event_dates %>%
 
 ggplot()+
   geom_point(data = event_dates, aes(x=EC_FIm, y= DOC_FIm, color = dayyear),  size = event_dates$API_rescaled)+
+  scale_color_gradientn(colours = c("blue", "green", "red", "yellow", "blue"), values = c(0, 90, 180, 270, 360)/360)+
+  #scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage), breaks = c( "forest" , "nellie" , "shrub" , "tundra" , 'gage'))+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  ylim(-0.65,0.65)+
+  xlim(-0.65,0.65)+
+  xlab('EC Flushing Index')+
+  ylab('DOC Flushing Index')+
+  theme_cust()
+
+### Using point FI #######
+#first plot: point sizes all scaled by API
+ggplot()+
+  geom_point(data = event_dates_sub, aes(x=EC_FI, y= DOC_FI, color = Site, size = event_dates_sub$API_rescaled))+
+  scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage), breaks = c( "forest" , "nellie" , "shrub" , "tundra" , 'gage'))+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  ylim(-0.65,0.65)+
+  xlim(-0.65,0.65)+
+  xlab('EC Flushing Index')+
+  ylab('DOC Flushing Index')+
+  theme_cust()
+
+
+#second plot: color ramp for time of year 
+cols <- c("#4934eb","#ba03fc", '#03fc62', "#fcba03"  ,'#4934eb')
+event_dates_sub <- event_dates_sub %>%
+  mutate(dayyear = rescale(as.numeric(strftime(event_dates_sub$Start, format = "%j"),to = c(0,1))))
+
+ggplot()+
+  geom_point(data = event_dates_sub, aes(x=EC_FI, y= DOC_FI, color = dayyear),  size = event_dates_sub$API_rescaled)+
   scale_color_gradientn(colours = c("blue", "green", "red", "yellow", "blue"), values = c(0, 90, 180, 270, 360)/360)+
   #scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage), breaks = c( "forest" , "nellie" , "shrub" , "tundra" , 'gage'))+
   geom_hline(yintercept = 0)+
@@ -201,3 +265,7 @@ ggplot()+
   theme_cust()
 
 st_sub[which.min(st_sub$tundra),] 
+
+
+
+

@@ -92,7 +92,11 @@ FI_EC_wagg <- FI_weekly_agg(EC_FullTS)
 FI_DOC_wagg <- FI_weekly_agg(DOC_FullTS)
 FI_ST_wagg <- FI_weekly_agg(RelST_FullTS)
 
-  ggplot(data = FI_ST_wagg)+
+  
+############### Plotting ###################
+
+## Stage
+ggplot(data = FI_ST_wagg)+
     geom_point( aes(x=week, y= forest), color = col.forest, size = 3)+
     geom_smooth(aes(x=week, y= forest), color = col.forest, size = 1, se= FALSE)+
     geom_point( aes(x=week, y= shrub), color = col.shrub, size = 3)+
@@ -103,16 +107,59 @@ FI_ST_wagg <- FI_weekly_agg(RelST_FullTS)
     geom_smooth( aes(x=week, y= nellie), color =  col.nellie, size = 1, se= FALSE)+
     geom_point( aes(x=week, y= gage), color = col.gage, size = 3)+
     geom_smooth( aes(x=week, y= gage), color = col.gage, size = 1, se= FALSE)+
+    scale_x_continuous(breaks = seq(0, 50, by = 10))+
     xlab('Week')+
     ylab('Flashiness Index')+
     ggtitle("ST")+
-    #ylim(0,0.05)+
+    ylim(0,0.008)+
     #xlim(bounds_sub)+
     theme_cust()+
     theme(axis.text = element_text(size = 16))+
     theme(axis.title = element_text(size = 16)) 
 
 
-
-
+## EC 
+  ggplot(data = FI_EC_wagg)+
+    geom_point( aes(x=week, y= forest), color = col.forest, size = 3)+
+    geom_smooth(aes(x=week, y= forest), color = col.forest, size = 1, se= FALSE)+
+    geom_point( aes(x=week, y= shrub), color = col.shrub, size = 3)+
+    geom_smooth( aes(x=week, y= shrub), color = col.shrub, size = 1, se= FALSE)+
+    geom_point( aes(x=week, y= tundra), color = col.tundra, size = 3)+
+    geom_smooth( aes(x=week, y= tundra), color = col.tundra, size = 1, se= FALSE)+
+    geom_point( aes(x=week, y= nellie), color =  col.nellie, size = 3)+
+    geom_smooth( aes(x=week, y= nellie), color =  col.nellie, size = 1, se= FALSE)+
+    geom_point( aes(x=week, y= gage), color = col.gage, size = 3)+
+    geom_smooth( aes(x=week, y= gage), color = col.gage, size = 1, se= FALSE)+
+    scale_x_continuous(breaks = seq(0, 50, by = 10))+
+    xlab('Week')+
+    ylab('Flashiness Index')+
+    ggtitle("EC")+
+    ylim(0,0.008)+
+    #xlim(bounds_sub)+
+    theme_cust()+
+    theme(axis.text = element_text(size = 16))+
+    theme(axis.title = element_text(size = 16)) 
+  
+  ## DOC 
+  ggplot(data = FI_DOC_wagg)+
+    geom_point( aes(x=week, y= forest), color = col.forest, size = 3)+
+    geom_smooth(aes(x=week, y= forest), color = col.forest, size = 1, se= FALSE)+
+    geom_point( aes(x=week, y= shrub), color = col.shrub, size = 3)+
+    geom_smooth( aes(x=week, y= shrub), color = col.shrub, size = 1, se= FALSE)+
+    geom_point( aes(x=week, y= tundra), color = col.tundra, size = 3)+
+    geom_smooth( aes(x=week, y= tundra), color = col.tundra, size = 1, se= FALSE)+
+    geom_point( aes(x=week, y= nellie), color =  col.nellie, size = 3)+
+    geom_smooth( aes(x=week, y= nellie), color =  col.nellie, size = 1, se= FALSE)+
+    geom_point( aes(x=week, y= gage), color = col.gage, size = 3)+
+    geom_smooth( aes(x=week, y= gage), color = col.gage, size = 1, se= FALSE)+
+    scale_x_continuous(breaks = seq(0, 50, by = 10))+
+    xlab('Week')+
+    ylab('Flashiness Index')+
+    ggtitle("DOC")+
+    ylim(0,0.008)+
+    #xlim(bounds_sub)+
+    theme_cust()+
+    theme(axis.text = element_text(size = 16))+
+    theme(axis.title = element_text(size = 16)) 
+  
 
