@@ -17,7 +17,7 @@ FDOM_fullTS$datetime <- strptime(FDOM_fullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz =
 core_sites$Datetime <- strptime(core_sites$Datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 
 core_sites <- mutate(core_sites, doc_detect = if_else(DOC< 0.5, TRUE, FALSE))
-rep_str = c('stream_gauge' = 'gage','Forest'= 'forest', 'shrub_creek' = 'shrub', 'Tundra' = 'tundra', 'Nellie_Juan' = 'nellie', 'glacier_hut' = 'glacier')
+rep_str = c('stream_gauge' = 'gage','Forest'= 'forest', 'shrub_creek' = 'shrub', 'Tundra' = 'tundra', 'nellie_juan' = 'nellie', 'glacier_hut' = 'glacier')
 core_sites$Site <- str_replace_all(core_sites$Site, rep_str)
 core_sites$Datetime <- round_date(as.POSIXct(core_sites$Datetime), "15 mins")
 
@@ -29,7 +29,7 @@ core_lab$'Sonde' <- rep(NA, nrow(core_lab))
 #####----- INPUT VALUES BY LOOPING THROUGH EACH VARIABLE NAME -----#####
 i <- 2
 k<- 4
-for (i in 2:6){
+for (i in 2:5){
   inds <- which(core_lab$'Site' == colnames(FDOM_fullTS)[i])
   times <- core_lab$Datetime[inds]
   for (k in 1:length(times)){
@@ -63,7 +63,7 @@ cen_model <- cenken(core_lab$DOC, core_lab$doc_detect, core_lab$Sonde, core_lab$
 #plot with just sonde FDOM v.s. DOC 
 ggplot(core_lab, aes(x=Sonde, y = DOC, color =as.factor(Site), group = 1))+
   scale_color_manual(values = c("#E2725B", "#EA9DFF", "#FFAA00", "#A80084", "#73DFFF",  "#0084A8", "#059E41" , "#6600CC"),breaks = c( "forest" , "nellie" , "shrub" , "tundra" , "gage" , "glacier"),labels = c("Forest", "Nellie Juan" , "Shrub" , "Tundra" , "Gage" ,  "Glacier"))+
-  geom_point(size = 3, alpha = 0.7)+
+  geom_point(size = 3)+
   geom_abline(aes(slope=cen_model$slope,intercept=cen_model$intercept,color="black"))+
   theme_cust()+
   theme(legend.position = c(0.2,0.75)) +

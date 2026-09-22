@@ -45,43 +45,82 @@ readr::write_csv(FDOM_fullTS, file = file.path("outputs", "04_FDOM_fullTS.csv"))
 #setting time bounds to pull data
 bounds <- as.POSIXct(c('01/01/2021 00:00:00','10/01/2023 23:45:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
 
-#pulling Q data form NWIS server
+#pulling Q data from NWIS server
 gauge_data <- readNWISdata(sites = '15236900', service = 'iv', parameterCd = '00060', 
                            startDate = as.Date(bounds[1]), endDate = as.Date(bounds[2])) %>%
   select(datetime = dateTime, Q = X_00060_00000) %>%
   mutate(datetime = with_tz(datetime, tz = 'America/Anchorage'),Q_m3s = Q*0.028316847)
 
+#Going to try and use data from Seward instead of pulling WX990 data from NWIS 
+#NWIS only gives provisional data in a 2 year moving window so we're now past the window were all needed data is available through NWIS
+#Additionally, since it's only provisional data, we would need to do data release to use the data
+#So we're tryng the publically available Seward met station data to see if it is sufficient for our purposes 
 #pulling met data from NWIS server 
-met_data <- readNWISdata(sites = '15236895', service = 'iv', parameterCd = '72194', 
-                         startDate = as.Date(bounds[1]), endDate = as.Date(bounds[2]))  %>%
-  select(datetime = dateTime, Precip1 = X_..2.._72194_00000, Precip2 = X_72194_00000) %>%
-  mutate(datetime = with_tz(datetime, tz = 'America/Anchorage'))
+#met_data <- readNWISdata(sites = '15236895', service = 'iv', parameterCd = c('72194','00020'), 
+#                       startDate = as.Date(bounds[1]), endDate = as.Date(bounds[2]))  %>%
+# select(datetime = dateTime, Precip1 = X_..2.._72194_00000, Precip2 = X_72194_00000, AirT = X_PROBE1_00020_00000) %>%
+# mutate(datetime = with_tz(datetime, tz = 'America/Anchorage'))
 # met data from server is the raw cumulative time series which includes draining of the TPG
 # the following few lines clumsily deal with that
 
-precip2 <- diff(met_data$Precip2) #taking the difference from one time step to the next to get 15 min instantaneous data 
-precip2 <- data.frame(met_data$datetime[2:length(met_data$datetime)],precip2) #pulling the time stamp along with the 15 min instantaneous data
-colnames(precip2)[1] ="datetime"  #changing the column header
-precip2$precip2[precip2$precip2 > 300 |precip2$precip2 < 0 ] = NA #when the gage was drained there are artificially high values, this turns those and any negative values into no data
+#airT <- met_data %>%
+#select(datetime, AirT)
 
-precip_hourly <- aggregate(precip2["precip2"], list(hour=cut(as.POSIXct(precip2$datetime), "hour")),sum) 
+#precip2 <- diff(met_data$Precip2) #taking the difference from one time step to the next to get 15 min instantaneous data 
+#precip2 <- data.frame(met_data$datetime[2:length(met_data$datetime)],precip2) #pulling the time stamp along with the 15 min instantaneous data
+#colnames(precip2)[1] ="datetime"  #changing the column header
+#precip2$precip2[precip2$precip2 > 300 |precip2$precip2 < 0 ] = NA #when the gage was drained there are artificially high values, this turns those and any negative values into no data
+
+#precip_hourly <- aggregate(precip2["precip2"], list(hour=cut(as.POSIXct(precip2$datetime), "hour")),sum) 
 # summing 15 min data to hourly precip totals
-precip_hourly$precip2[precip_hourly$precip2 == 0 ] = NA  # turning any hour that has no precip to an NA so it doesn't display as a 0 in plots. 
-colnames(precip_hourly)<- c('datetime','precip_mm')
-precip_hourly$datetime <- as.POSIXct(precip_hourly$datetime, tz='America/Anchorage')
+#precip_hourly$precip2[precip_hourly$precip2 == 0 ] = NA  # turning any hour that has no precip to an NA so it doesn't display as a 0 in plots. 
+#colnames(precip_hourly)<- c('datetime','precip_mm')
+#precip_hourly$datetime <- as.POSIXct(precip_hourly$datetime, tz='America/Anchorage')
 
-#merging to one data frame
-start <- precip_hourly$datetime[1] #finding the first time step with data (i.e. Jan 1 00:00)
-datetime_target <- data.frame(seq(start, start + months(33), by = "15 min")) #making the 15 min timeseries all other data will be matched to. 
+
+
+### Code to get data from the seward airport, this takes a long time to retrieve the data to commented out and can be updated if necesscary
+Seward_met <- riem_measures( station = "PAWD", date_start = "2021-01-01", date_end = "2023-10-01" )
+Seward_met <- Seward_met %>% select(dateTime = valid, AirT_F= tmpf )
+Seward_met <- Seward_met[!is.na(Seward_met$AirT_F),]
+Seward_met$dateTime <- format(round(Seward_met$dateTime, units="hours"), format='%Y-%m-%d %H:%M:%S')
+
+Seward_met$dateTime <- as.POSIXct(Seward_met$dateTime, "%Y-%m-%d %H:%M:%S", tz = 'UTC')
+Seward_temp <- Seward_met %>% 
+  mutate(Sew_AirT_C = (AirT_F-32)*(5/9)) %>%
+  select(datetime = dateTime, Sew_AirT_C = Sew_AirT_C)
+readr::write_csv(Seward_temp, file = file.path("outputs", "04_Seward_temp.csv"))
+
+#datetime_target <- data.frame(seq(bounds[1], bounds[1] + months(33), by = "15 min")) #making the 15 min timeseries all other data will be matched to. 
 # changing column names in all data frames so they can be merged more easily
-colnames(datetime_target)<- ('datetime') 
+#colnames(datetime_target)<- ('datetime') 
 
-Precip_q_ts <- merge(datetime_target,gauge_data, by = 'datetime',all.x = TRUE)
-Precip_q_ts <- merge(Precip_q_ts,precip_hourly, by = 'datetime',all.x = TRUE)
-Precip_q_ts <- merge(Precip_q_ts,precip2, by = 'datetime',all.x = TRUE)
+#Add to this as outputs change
+#Precip_q_ts <- merge(datetime_target,gauge_data, by = 'datetime',all.x = TRUE)
+
+#########Just loading processed Seward and other met data for speed ############
+Seward_precip <- read.csv('data/PAWD.precip.no.zero.csv') %>%
+  select(datetime = valid, precip = p01m)
+Seward_precip$datetime <- as.POSIXct(Seward_precip$datetime, "%Y-%m-%d %H:%M", tz = 'UTC')
+Seward_precip$datetime <- as.POSIXct(round_date(Seward_precip$datetime, unit="hours"))
+readr::write_csv(Seward_precip, file = file.path("outputs", "04_Seward_precip.csv"))
+
+
+## Pulling 990 temp data for winter plots from an existing combined dataset 
+#will need to make some decisions on how this will work for the paper 
+Wx990_temp <- read.csv('outputs/04_Precip_q_ts.csv') %>%
+  select(datetime = datetime, AirT990 = AirT)
+Wx990_temp$datetime <- strptime(Wx990_temp$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
+readr::write_csv(Wx990_temp, file = file.path("outputs", "04_Wx990_temp.csv"))
+
+#writing just the gage data on it's own 
+readr::write_csv(gauge_data, file = file.path("outputs", "04_gageQ_data.csv"))
+ 
 
 ## Write file to outputs to use in analysis scripts 
-readr::write_csv(Precip_q_ts, file = file.path("outputs", "04_Precip_q_ts.csv"))
+#readr::write_csv(Precip_q_ts, file = file.path("outputs", "04_Precip_q_ts.csv"))
+
+
 
 
 
@@ -135,20 +174,31 @@ load_St <- function(input){
     mutate(datetime = as.POSIXct(datetime , tz='America/Anchorage', format = '%Y-%m-%d %H:%M:%S')) %>%
     mutate(datetime = round_date(datetime, "15 mins"))
 }
+#modified function to deal with new data file format version from zan emailed on Mar 6th 2026
+load_St_mod <- function(input){
+  St_dat <- read.csv(input) %>%
+    subset(select = c('DateTime', 'GH_m'))%>%
+    rename('datetime' = 'DateTime', 'stage' = 'GH_m' ) %>%
+    mutate(datetime = as.POSIXct(datetime , tz='America/Anchorage', format = '%Y-%m-%d %H:%M')) %>%
+    mutate(datetime = round_date(datetime, "15 mins"))
+}
 
 St_gage <- load_St('Data/Gage_height.ft@15236900.20210101.csv')
 
-St_shrub <- load_St('Data/Gage_height.ft@15236902.20210101.csv')
+#St_shrub <- load_St('Data/Gage_height.ft@15236902.20210101.csv')
+St_shrub <- load_St_mod('Data/nellieJuanRiverBasin_waterSurfaceHeight_shrub_2019-2024.csv')
 
-St_tundra <- load_St('Data/Gage_height.ft@15236987.20210101.csv')
+#St_tundra <- load_St('Data/Gage_height.ft@15236987.20210101.csv')
+St_tundra <- load_St_mod('Data/nellieJuanRiverBasin_waterSurfaceHeight_tundra_2019-2024.csv')
 
-St_nellie <- load_St('Data/Gage_height.ft@15237000.20210101.csv')
+#St_nellie <- load_St('Data/Gage_height.ft@15237000.20210101.csv')
+St_nellie <- load_St_mod('Data/nellieJuanRiverBasin_waterSurfaceHeight_nellie_2019-2024.csv')
 
-St_forest <- load_St('Data/Gage_height.ft@15237003.20210101.csv')
-
+#St_forest <- load_St('Data/Gage_height.ft@15237003.20210101.csv')
+St_forest <- load_St_mod('Data/nellieJuanRiverBasin_waterSurfaceHeight_forest_2019-2024.csv')
 
 start <- St_forest$datetime[1]
-datetime_target <- data.frame(seq(start, start + months(33), by = "15 min"))
+datetime_target <- data.frame(seq(start, start + months(37), by = "15 min"))
 colnames(datetime_target)<- ('datetime')
 colnames(St_shrub)<- c('datetime','shrub')
 colnames(St_forest)<- c('datetime','forest')

@@ -6,7 +6,7 @@
 
 rm(list= ls())
 
-setwd("/Users/anna/BSU_Drive/Projects/AK_post-doc/DOC/wolv_DOC")
+#setwd("/Users/anna/BSU_Drive/Projects/AK_post-doc/DOC/wolv_DOC")
 source("paths+packages.R")
 
 #install.packages("remotes") 
@@ -21,7 +21,7 @@ DOC_FullTS$datetime <-strptime(DOC_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'U
 EC_FullTS <- read.csv('outputs/04_EC_FullTS.csv')
 EC_FullTS$datetime <-strptime(EC_FullTS$datetime, "%Y-%m-%dT%H:%M:%S", tz = 'UTC')
 
-
+# breaks for hydroperiods for the entire timeseries (2021-2023)
 breaks <- as.POSIXct(c('04/15/2021 00:00:00', #1
                        '05/29/2021 00:00:00', #2
                        '06/24/2021 23:45:00', #3
@@ -39,6 +39,7 @@ breaks <- as.POSIXct(c('04/15/2021 00:00:00', #1
                        '09/21/2023 23:45:00'
 ), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
 
+# Function to assign hydroperiods to each dataset 
 hydroperiod<-function(y) {
   y$period <- NA
   y$period[y$datetime <= breaks[1] ] <- 0
@@ -60,12 +61,12 @@ hydroperiod<-function(y) {
   return(y)
 }
 
+# assigning hydroperiods to each dataset
 EC_FullTS <- hydroperiod(EC_FullTS)
 DOC_FullTS <- hydroperiod(DOC_FullTS)
 Stage_FullTS <- hydroperiod(Stage_FullTS)
 
 # Data Subsetting Function
-
 base_subset <- function(stage, site, year, Hperiod){
   stage %>%
     select(datetime, !!site, period) %>%
@@ -74,7 +75,7 @@ base_subset <- function(stage, site, year, Hperiod){
 }
 
 
-For22_3filled <- base_subset(Stage_FullTS, "forest", 2022, 3)
+For22_3filled <- base_subset(Stage_FullTS, "shrub", 2022, 4)
 For22_3_base <- HydRun::separate.baseflow(For22_3filled, 0.95,10)
 
 #Sub-setting to plot
@@ -83,11 +84,11 @@ baseflow <- For22_3_base$baseflow
 
 # Plotting Baseflow separation
 ggplot()+
-  geom_point(aes(x= as.POSIXct(For22_3filled$datetime), y = For22_3filled$forest),size = 0.5, color = col.tundra )+
-  geom_point(aes(x= Stormflow$datetime, y = Stormflow$stormflow), size = 0.5, color = col.gage )+
+  geom_point(aes(x= as.POSIXct(For22_3filled$datetime), y = For22_3filled$shrub),size = 0.5, color = "#2c2773")+
+  geom_point(aes(x= Stormflow$datetime, y = Stormflow$stormflow), size = 0.5, color = "#2674f0"  )+
   geom_point(aes(x = baseflow$datetime, y = baseflow$baseflow), size = 0.5)
 
-runoff_events <- HydRun::extract.runoff(Stormflow, 0.1, 0.001, 0.001, 0.35, 1, 4, 0.001) 
+runoff_events <- HydRun::extract.runoff(Stormflow, 0.01, 0.001, 0.001, 0.35, 1, 4, 0.001) 
 
 #Pulling DOC data for each identified event
 combined_events <- list()
@@ -103,13 +104,13 @@ for (i in 1:length(runoff_events$RunoffEvents)){
     combined_events[[i]] <- mutate(temp, DOC = DOC_sub$forest, EC = EC_sub$forest) 
   }
 }
-#combined_events = combined_events[-which(sapply(combined_events, is.null))] #taking out the events that don't have data
+
 
 events_long <- bind_rows(combined_events, .id = "number") #turning into one dataframe for plotting
 
 ggplot(events_long)+ 
-  geom_point( aes(x= as.POSIXct(datetime), y = event_stormflow),size = 0.5, color = col.tundra )+
-  geom_point( aes(x= as.POSIXct(datetime), y = DOC),size = 0.5, color = col.gage )+
-  geom_point( aes(x= as.POSIXct(datetime), y = EC/10), size = 0.5, color = col.forest )+
+  geom_point( aes(x= as.POSIXct(datetime), y = event_stormflow),size = 0.5, color = "#2674f0" )+
+  geom_point( aes(x= as.POSIXct(datetime), y = DOC),size = 0.5, color = "#784f24")+
+  geom_point( aes(x= as.POSIXct(datetime), y = EC/10), size = 0.5, color = "#d93f91" )+
   facet_wrap(vars(as.numeric(number)), scales = "free")
   
