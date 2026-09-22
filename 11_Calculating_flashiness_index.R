@@ -1,7 +1,7 @@
 ##11_Calculating_flashiness_index
 # This brings in the DOC, Precip, EC, and Relative Stage timeseries for plotting
 # Pulls out events as examples and makes plots
-setwd("/Users/annabergstrom/BSU_drive/Projects/AK_post-doc/DOC/wolv_DOC")
+#setwd("/Users/annabergstrom/BSU_drive/Projects/AK_post-doc/DOC/wolv_DOC")
 rm(list= ls())
 source("paths+packages.R")
 
@@ -69,7 +69,7 @@ FI_weekly_agg <- function (dataset){
     
   
   ratio_numer_sum <- ratio_numer_week %>%
-    summarize(across(everything(), ~(sum(.x,na.rm = TRUE))))
+    summarize(across(everything(), ~(sum(.x,na.rm = TRUE))), .groups = "drop")
 
   
   ratio_denom <- dataset.sm[2:length(dataset.sm$forest),1:6] %>%
@@ -78,7 +78,7 @@ FI_weekly_agg <- function (dataset){
     group_by(week)
   
   ratio_denom_sum <- ratio_denom %>%
-    summarize(across(everything(), ~(sum(.,na.rm = TRUE)))) 
+    summarize(across(everything(), ~(sum(.,na.rm = TRUE))), .groups = "drop") 
  
   
   FI <- ratio_numer_sum [,2:6]/ratio_denom_sum[,2:6] 
@@ -98,15 +98,15 @@ FI_ST_wagg <- FI_weekly_agg(RelST_FullTS)
 ## Stage
 ggplot(data = FI_ST_wagg)+
     geom_point( aes(x=week, y= forest), color = col.forest, size = 3)+
-    geom_smooth(aes(x=week, y= forest), color = col.forest, size = 1, se= FALSE)+
+    geom_smooth(aes(x=week, y= forest), color = col.forest, size = 1, se= FALSE, span = 0.3)+ #default currently in figure is 0.75
     geom_point( aes(x=week, y= shrub), color = col.shrub, size = 3)+
-    geom_smooth( aes(x=week, y= shrub), color = col.shrub, size = 1, se= FALSE)+
+    geom_smooth( aes(x=week, y= shrub), color = col.shrub, size = 1, se= FALSE, span = 0.3)+
     geom_point( aes(x=week, y= tundra), color = col.tundra, size = 3)+
-    geom_smooth( aes(x=week, y= tundra), color = col.tundra, size = 1, se= FALSE)+
+    geom_smooth( aes(x=week, y= tundra), color = col.tundra, size = 1, se= FALSE, span = 0.3)+
     geom_point( aes(x=week, y= nellie), color =  col.nellie, size = 3)+
-    geom_smooth( aes(x=week, y= nellie), color =  col.nellie, size = 1, se= FALSE)+
+    geom_smooth( aes(x=week, y= nellie), color =  col.nellie, size = 1, se= FALSE, span = 0.3)+
     geom_point( aes(x=week, y= gage), color = col.gage, size = 3)+
-    geom_smooth( aes(x=week, y= gage), color = col.gage, size = 1, se= FALSE)+
+    geom_smooth( aes(x=week, y= gage), color = col.gage, size = 1, se= FALSE, span = 0.3)+
     scale_x_continuous(breaks = seq(0, 50, by = 10))+
     xlab('Week')+
     ylab('Flashiness Index')+

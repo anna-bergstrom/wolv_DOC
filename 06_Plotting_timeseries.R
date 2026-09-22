@@ -36,6 +36,13 @@ DOC_FullTS <-  cbind(FDOM_fullTS[1], DOC_FullTS)
 
 readr::write_csv(DOC_FullTS, file = file.path("outputs", "06_DOC_FullTS.csv"))
 
+
+############ Cutting Stage data down to date range consistent with other TS #################
+ST_bounds<- as.POSIXct(c('01/01/2021 09:00:00','10/01/2023 08:00:00'), format="%m/%d/%Y %H:%M:%S", TZ = "America/Anchorage")
+
+Stage_FullTS <- Stage_FullTS %>%
+  filter(as.POSIXct(datetime) >= ST_bounds[1], as.POSIXct(datetime) <= ST_bounds[2]) 
+
 ############ Calculating a relative stage ###############
 
 normalized<-function(y) {
@@ -53,7 +60,6 @@ colnames(RelST_FullTS) <- c("datetime","forest", "shrub", "tundra", "nellie", "g
 
 
 readr::write_csv(RelST_FullTS, file = file.path("outputs", "06_relative_stageTS.csv"))
-
 
 ####### creating grouping so lines are not connected across no data in the plot###########
 my_func <- function(x) {
@@ -115,6 +121,8 @@ forest_sub <- EC_FullTS[!is.na(EC_FullTS$forest), ]
 nellie_sub <- EC_FullTS[!is.na(EC_FullTS$nellie), ]
 shrub_sub <- EC_FullTS[!is.na(EC_FullTS$shrub), ]
 gage_sub <- EC_FullTS[!is.na(EC_FullTS$gage), ]
+
+
 ts3<- ggplot()+
   geom_line(data = EC_FullTS,aes(x=as.POSIXct(datetime), y= tundra), color = col.tundra, size = 0.5)+
   geom_line(data = EC_FullTS,aes(x=as.POSIXct(datetime), y= forest), color = col.forest, size = 0.5)+
@@ -122,7 +130,7 @@ ts3<- ggplot()+
   geom_line(data = EC_FullTS,aes(x=as.POSIXct(datetime), y= shrub), color = col.shrub, size = 0.5)+
   geom_line(data = EC_FullTS,aes(x=as.POSIXct(datetime), y= gage), color = col.gage, size = 0.5)+
   ylab(expression(paste("EC (" ,  mu,  "S cm"^"-1", ")"))) + 
-  scale_x_datetime(breaks = scales::date_breaks("months")  , date_labels = "%b")+
+  scale_x_datetime(limits = c(as.POSIXct(DOC_FullTS$datetime[1]), as.POSIXct(tail(DOC_FullTS$datetime, n=1))),breaks = scales::date_breaks("months")  , date_labels = "%b")+
   xlab('')+
   theme_cust()
 
@@ -142,11 +150,11 @@ ts4<- ggplot()+
   geom_line(data = RelST_FullTS,aes(x=as.POSIXct(datetime), y= shrub), color = col.shrub, size = 0.5)+
   geom_line(data = RelST_FullTS,aes(x=as.POSIXct(datetime), y= gage), color = col.gage, size = 0.5)+
   ylab("Stage") + 
-  scale_x_datetime(date_breaks = "months" , date_labels = "%b")+
+  scale_x_datetime(limits = c(as.POSIXct(DOC_FullTS$datetime[1]), as.POSIXct(tail(DOC_FullTS$datetime, n=1))),date_breaks = "months" , date_labels = "%b")+
   xlab('')+
   theme_cust()
 
-bothTS <- plot_grid(ts2, ts1, ts3, ts4, ncol=1, align = "v")
+bothTS <- plot_grid(ts2, ts4, ts3, ts1, ncol=1, align = "v")
 bothTS
 
 Gage_EC_comp <- merge(Precip_Q,EC_FullTS, by = 'datetime',all.x = TRUE)

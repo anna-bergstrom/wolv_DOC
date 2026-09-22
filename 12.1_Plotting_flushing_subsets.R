@@ -148,6 +148,9 @@ event_dates <- event_dates %>%
 event_dates_sub <- event_dates %>% 
   filter(month(as.POSIXct(event_dates$Start)) > 4 & month(as.POSIXct(event_dates$Start)) < 11)
 
+event_dates_win <- event_dates %>% 
+  filter(month(as.POSIXct(event_dates$Start)) < 5 | month(as.POSIXct(event_dates$Start)) > 10)
+
 ###### linear regressions with mean FI ###########
 
 Forest_FI <- event_dates_sub[which(event_dates_sub$Site == "forest"),] 
@@ -181,7 +184,7 @@ ggplot()+
   geom_abline(intercept = coef(forest_lm)[1], slope = coef(forest_lm)[2], colour = col.forest)+
   geom_abline(intercept = coef(shrub_lm)[1], slope = coef(shrub_lm)[2], colour = col.shrub)+
   geom_abline(intercept = coef(gage_lm)[1], slope = coef(gage_lm)[2], colour = col.gage)+
-  geom_point(data = event_dates_sub, aes(x=EC_FIm, y= DOC_FIm, color = Site, size = event_dates_sub$API_rescaled) )+
+  geom_point(data = event_dates, aes(x=EC_FIm, y= DOC_FIm, color = Site, size = event_dates$API_rescaled) )+
   scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage), breaks = c( "forest" , "nellie" , "shrub" , "tundra" , 'gage'))+
 
   ylim(-0.65,0.65)+
@@ -233,6 +236,72 @@ ggplot()+
   #scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage), breaks = c( "forest" , "nellie" , "shrub" , "tundra" , 'gage'))+
   geom_hline(yintercept = 0)+
   geom_vline(xintercept = 0)+
+  ylim(-0.65,0.65)+
+  xlim(-0.65,0.65)+
+  xlab('EC Flushing Index')+
+  ylab('DOC Flushing Index')+
+  theme_cust()
+
+
+########## Analysis based on antecedent concentration ##############
+
+Forest_FI <- event_dates_sub[which(event_dates_sub$Site == "forest"),] 
+forestDOC_lm <- lm(DOC_FIm ~ DOCbf, Forest_FI)
+forestEC_lm <- lm(EC_FIm ~ ECbf, Forest_FI)
+summary(forestDOC_lm) #significant r2= 0.21
+summary(forestEC_lm) #significant r2 = 0.33
+
+gage_FI <- event_dates_sub[which(event_dates_sub$Site == "gage"),] 
+gageDOC_lm <- lm(DOC_FIm ~ DOCbf, gage_FI)
+summary(gageDOC_lm) # p-value = 0.08
+gageEC_lm <- lm(EC_FIm ~ ECbf, gage_FI)
+summary(gageEC_lm) # p-value = 0.08
+
+nellie_FI <- event_dates_sub[which(event_dates_sub$Site == "nellie"),] 
+nellieDOC_lm <- lm(DOC_FIm ~ DOCbf, nellie_FI)
+summary(nellieDOC_lm) #not significant
+nellieEC_lm <- lm(EC_FIm ~ ECbf, nellie_FI)
+summary(nellieEC_lm) #significant r2 = 0.58
+
+tundra_FI <- event_dates_sub[which(event_dates_sub$Site == "tundra"),] 
+tundraDOC_lm <- lm(DOC_FIm ~ DOCbf, tundra_FI)
+summary(tundraDOC_lm)  # p-value = 0.07
+tundraEC_lm <- lm(EC_FIm ~ ECbf, tundra_FI)
+summary(tundraEC_lm)  # p-value = 0.08
+
+shrub_FI <- event_dates_sub[which(event_dates_sub$Site == "shrub"),] 
+shrubDOC_lm <- lm(DOC_FIm ~ DOCbf, shrub_FI)
+summary(shrubDOC_lm) #significant 
+shrubEC_lm <- lm(EC_FIm ~ ECbf, shrub_FI)
+summary(shrubEC_lm) # not significant 
+
+
+### plotting ###
+ggplot()+
+  geom_point(data = event_dates_sub, aes(x=DOCbf, y= DOC_FIm, color = Site, size = API_rescaled) )+
+  scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage), breaks = c( "forest" , "nellie" , "shrub" , "tundra" , 'gage'))+
+  geom_point(data = event_dates_win, aes(x=DOCbf, y= DOC_FIm, color = Site, size = 4), shape = 17 )+  
+  xlim(0,3)+
+  xlab('DOC Pre-event concentration')+
+  ylab('DOC Flushing Index')+
+  theme_cust()
+
+
+ggplot()+
+  geom_point(data = event_dates_sub, aes(x=ECbf, y= EC_FIm, color = Site, size = API_rescaled) )+
+  scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage), breaks = c( "forest" , "nellie" , "shrub" , "tundra" , 'gage'))+
+  #geom_point(data = event_dates_win, aes(x=ECbf, y= EC_FIm, color = Site, size = 4),shape=17 )+
+  xlab('EC Pre-event concentration')+
+  ylab('EC Flushing Index')+
+  theme_cust()
+
+
+ggplot()+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  geom_point(data = event_dates_sub, aes(x=EC_FIm, y= DOC_FIm, color = Site, size = event_dates_sub$API_rescaled) )+
+  geom_point(data = event_dates_win, aes(x=EC_FIm, y= DOC_FIm, color = Site, size = 4),shape=17 )+
+  scale_color_manual(values = c(col.forest, col.nellie, col.shrub, col.tundra, col.gage), breaks = c( "forest" , "nellie" , "shrub" , "tundra" , 'gage'))+
   ylim(-0.65,0.65)+
   xlim(-0.65,0.65)+
   xlab('EC Flushing Index')+

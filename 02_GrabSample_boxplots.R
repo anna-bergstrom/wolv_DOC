@@ -1,7 +1,7 @@
 ## 02_GrabSample_boxplots
 
 # This code plots the boxplots of grab sample parameters at the core sampling sites, figures will be used in paper
-setwd("/Users/annabergstrom/BSU_drive/Projects/AK_post-doc/DOC/wolv_DOC")
+#setwd("/Users/annabergstrom/BSU_drive/Projects/AK_post-doc/DOC/wolv_DOC")
 source("paths+packages.R")
 
 

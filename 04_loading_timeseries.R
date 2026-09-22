@@ -174,20 +174,31 @@ load_St <- function(input){
     mutate(datetime = as.POSIXct(datetime , tz='America/Anchorage', format = '%Y-%m-%d %H:%M:%S')) %>%
     mutate(datetime = round_date(datetime, "15 mins"))
 }
+#modified function to deal with new data file format version from zan emailed on Mar 6th 2026
+load_St_mod <- function(input){
+  St_dat <- read.csv(input) %>%
+    subset(select = c('DateTime', 'GH_m'))%>%
+    rename('datetime' = 'DateTime', 'stage' = 'GH_m' ) %>%
+    mutate(datetime = as.POSIXct(datetime , tz='America/Anchorage', format = '%Y-%m-%d %H:%M')) %>%
+    mutate(datetime = round_date(datetime, "15 mins"))
+}
 
 St_gage <- load_St('Data/Gage_height.ft@15236900.20210101.csv')
 
-St_shrub <- load_St('Data/Gage_height.ft@15236902.20210101.csv')
+#St_shrub <- load_St('Data/Gage_height.ft@15236902.20210101.csv')
+St_shrub <- load_St_mod('Data/nellieJuanRiverBasin_waterSurfaceHeight_shrub_2019-2024.csv')
 
-St_tundra <- load_St('Data/Gage_height.ft@15236987.20210101.csv')
+#St_tundra <- load_St('Data/Gage_height.ft@15236987.20210101.csv')
+St_tundra <- load_St_mod('Data/nellieJuanRiverBasin_waterSurfaceHeight_tundra_2019-2024.csv')
 
-St_nellie <- load_St('Data/Gage_height.ft@15237000.20210101.csv')
+#St_nellie <- load_St('Data/Gage_height.ft@15237000.20210101.csv')
+St_nellie <- load_St_mod('Data/nellieJuanRiverBasin_waterSurfaceHeight_nellie_2019-2024.csv')
 
-St_forest <- load_St('Data/Gage_height.ft@15237003.20210101.csv')
-
+#St_forest <- load_St('Data/Gage_height.ft@15237003.20210101.csv')
+St_forest <- load_St_mod('Data/nellieJuanRiverBasin_waterSurfaceHeight_forest_2019-2024.csv')
 
 start <- St_forest$datetime[1]
-datetime_target <- data.frame(seq(start, start + months(33), by = "15 min"))
+datetime_target <- data.frame(seq(start, start + months(37), by = "15 min"))
 colnames(datetime_target)<- ('datetime')
 colnames(St_shrub)<- c('datetime','shrub')
 colnames(St_forest)<- c('datetime','forest')
